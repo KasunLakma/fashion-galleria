@@ -1,7 +1,13 @@
 "use client";
 
 import { CartProvider } from "@/context/CartContext";
+import { AdminAuthProvider } from "@/context/AdminAuthContext";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  return <CartProvider>{children}</CartProvider>;
+  return (
+    <AdminAuthProvider>
+      <CartProvider>{children}</CartProvider>
+    </AdminAuthProvider>
+  );
 }
+
