@@ -68,9 +68,13 @@ export default function CheckoutPage() {
     deliveryDetails: typeof formData;
   } | null>(null);
 
+  // Payment Option State
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "CARD" | "KOKO">("COD");
+
   // Delivery fee calculation
   const deliveryFee = subtotal >= 15000 || cartItems.length === 0 ? 0 : 400;
   const grandTotal = total + deliveryFee;
+  const kokoInstallment = Math.round(grandTotal / 3);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -109,6 +113,13 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
 
+    const paymentLabel =
+      paymentMethod === "COD"
+        ? "Cash on Delivery (COD)"
+        : paymentMethod === "CARD"
+        ? "Online Card Payment (Visa / Mastercard)"
+        : "Koko Pay in 3 Installments";
+
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
@@ -121,6 +132,7 @@ export default function CheckoutPage() {
           city: formData.city,
           district: formData.district,
           deliveryNotes: formData.deliveryNotes,
+          paymentMethod: paymentLabel,
           items: cartItems,
           subtotal,
           deliveryFee,
@@ -426,28 +438,128 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* Payment Method Pre-selected Selector */}
+              {/* Payment Method Selector (COD, Card, Koko) */}
               <div className="pt-4 border-t border-stone-200 space-y-3">
-                <span className="text-xs uppercase tracking-[0.25em] font-semibold text-amber-800 block">
-                  STEP 2 OF 2
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase tracking-[0.25em] font-semibold text-amber-800 block">
+                    STEP 2 OF 2
+                  </span>
+                  <span className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">
+                    Select Preferred Method
+                  </span>
+                </div>
                 <h3 className="font-serif text-lg font-bold uppercase tracking-tight text-stone-900">
                   Payment Option
                 </h3>
 
-                <div className="bg-amber-50/80 border-2 border-amber-700 p-4 rounded-xs flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-5 h-5 rounded-full border-4 border-amber-800 bg-white shrink-0" />
-                    <div>
-                      <strong className="block text-xs uppercase tracking-wider font-bold text-stone-900">
-                        Cash on Delivery (COD)
-                      </strong>
-                      <span className="text-[11px] text-stone-600">
-                        Pay cash directly to the courier agent when receiving your package.
-                      </span>
+                <div className="space-y-3">
+                  {/* Option 1: Cash on Delivery (COD) */}
+                  <div
+                    onClick={() => setPaymentMethod("COD")}
+                    className={`p-4 rounded-xs border-2 cursor-pointer transition-all flex items-center justify-between ${
+                      paymentMethod === "COD"
+                        ? "bg-amber-50/90 border-amber-800 shadow-xs"
+                        : "bg-white border-stone-200 hover:border-stone-400"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          paymentMethod === "COD"
+                            ? "border-amber-800 bg-amber-800 text-white"
+                            : "border-stone-300 bg-white"
+                        }`}
+                      >
+                        {paymentMethod === "COD" && <div className="w-2 h-2 rounded-full bg-white" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <strong className="block text-xs uppercase tracking-wider font-bold text-stone-900">
+                            Cash on Delivery (COD)
+                          </strong>
+                          <span className="bg-emerald-100 text-emerald-800 text-[9px] px-1.5 py-0.2 rounded font-extrabold uppercase">
+                            POPULAR
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-stone-600 block mt-0.5">
+                          Pay cash directly to the courier agent when receiving your package in Sri Lanka.
+                        </span>
+                      </div>
                     </div>
+                    <ShieldCheck size={22} className="text-amber-800 shrink-0 hidden sm:block" />
                   </div>
-                  <ShieldCheck size={22} className="text-amber-800 shrink-0" />
+
+                  {/* Option 2: Card Payment (Visa / Mastercard) */}
+                  <div
+                    onClick={() => setPaymentMethod("CARD")}
+                    className={`p-4 rounded-xs border-2 cursor-pointer transition-all flex items-center justify-between ${
+                      paymentMethod === "CARD"
+                        ? "bg-amber-50/90 border-amber-800 shadow-xs"
+                        : "bg-white border-stone-200 hover:border-stone-400"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          paymentMethod === "CARD"
+                            ? "border-amber-800 bg-amber-800 text-white"
+                            : "border-stone-300 bg-white"
+                        }`}
+                      >
+                        {paymentMethod === "CARD" && <div className="w-2 h-2 rounded-full bg-white" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <strong className="block text-xs uppercase tracking-wider font-bold text-stone-900">
+                            Card Payment (Visa / Mastercard)
+                          </strong>
+                          <span className="bg-blue-100 text-blue-900 text-[9px] px-1.5 py-0.2 rounded font-extrabold uppercase">
+                            256-BIT SSL
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-stone-600 block mt-0.5">
+                          Pay securely online with Visa, Mastercard, or AMEX debit/credit cards.
+                        </span>
+                      </div>
+                    </div>
+                    <Lock size={20} className="text-stone-700 shrink-0 hidden sm:block" />
+                  </div>
+
+                  {/* Option 3: Koko Payment (Buy Now, Pay Later) */}
+                  <div
+                    onClick={() => setPaymentMethod("KOKO")}
+                    className={`p-4 rounded-xs border-2 cursor-pointer transition-all flex items-center justify-between ${
+                      paymentMethod === "KOKO"
+                        ? "bg-amber-50/90 border-amber-800 shadow-xs"
+                        : "bg-white border-stone-200 hover:border-stone-400"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          paymentMethod === "KOKO"
+                            ? "border-amber-800 bg-amber-800 text-white"
+                            : "border-stone-300 bg-white"
+                        }`}
+                      >
+                        {paymentMethod === "KOKO" && <div className="w-2 h-2 rounded-full bg-white" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <strong className="block text-xs uppercase tracking-wider font-bold text-stone-900">
+                            Koko Payment (Pay in 3 Installments)
+                          </strong>
+                          <span className="bg-purple-100 text-purple-900 text-[9px] px-1.5 py-0.2 rounded font-extrabold uppercase">
+                            0% INTEREST
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-stone-600 block mt-0.5">
+                          Split into 3 monthly installments of <strong className="text-stone-900 font-bold">LKR {kokoInstallment.toLocaleString()}</strong> with Koko.
+                        </span>
+                      </div>
+                    </div>
+                    <Sparkles size={20} className="text-purple-800 shrink-0 hidden sm:block" />
+                  </div>
                 </div>
               </div>
 
@@ -461,12 +573,18 @@ export default function CheckoutPage() {
                   {isSubmitting ? (
                     <>
                       <Sparkles size={16} className="animate-spin" />
-                      <span>PROCESSING YOUR COD ORDER...</span>
+                      <span>PROCESSING ORDER...</span>
                     </>
                   ) : (
                     <>
                       <Lock size={16} className="text-amber-400" />
-                      <span>CONFIRM ORDER (CASH ON DELIVERY)</span>
+                      <span>
+                        {paymentMethod === "COD"
+                          ? "CONFIRM ORDER (CASH ON DELIVERY)"
+                          : paymentMethod === "CARD"
+                          ? "PROCEED TO CARD PAYMENT"
+                          : `PROCEED WITH KOKO (3 x LKR ${kokoInstallment.toLocaleString()})`}
+                      </span>
                     </>
                   )}
                 </button>
