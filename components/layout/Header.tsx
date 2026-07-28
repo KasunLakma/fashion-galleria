@@ -65,7 +65,7 @@ export default function Header() {
                 </Link>
 
                 <Link
-                  href="/shop"
+                  href="/shop?filter=new-arrivals"
                   className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group flex items-center space-x-1"
                 >
                   <span>New Arrivals</span>
@@ -76,7 +76,7 @@ export default function Header() {
                 </Link>
 
                 <Link
-                  href="/shop"
+                  href="/shop?filter=sale"
                   className="text-red-700 hover:text-red-800 transition-colors py-2 relative group flex items-center space-x-1 font-bold"
                 >
                   <span>Sale</span>
@@ -104,26 +104,30 @@ export default function Header() {
               {/* Search Icon */}
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2 text-gray-800 hover:text-black transition-colors"
+                className="p-2 text-gray-800 hover:text-amber-800 transition-colors"
                 aria-label="Search"
               >
                 <Search size={22} />
               </button>
 
-              {/* User Account Icon */}
-              <a
-                href="#account"
-                className="hidden sm:block p-2 text-gray-800 hover:text-black transition-colors"
-                aria-label="Account"
+              {/* User Account Icon -> Admin / Staff Portal */}
+              <Link
+                href="/admin/login"
+                className="hidden sm:block p-2 text-gray-800 hover:text-amber-800 transition-colors"
+                aria-label="Admin & Staff Portal"
+                title="Admin & Staff Management Portal"
               >
                 <User size={22} />
-              </a>
+              </Link>
 
               {/* Wishlist Icon */}
-              <a
-                href="#wishlist"
-                className="hidden sm:block p-2 text-gray-800 hover:text-black transition-colors relative"
+              <button
+                onClick={() => {
+                  alert("Wishlist feature: Save your favorite Ceylon Atelier items (Coming Soon!)");
+                }}
+                className="hidden sm:block p-2 text-gray-800 hover:text-amber-800 transition-colors relative"
                 aria-label="Wishlist"
+                title="Wishlist"
               >
                 <Heart size={22} />
                 {wishlistCount > 0 && (
@@ -131,13 +135,14 @@ export default function Header() {
                     {wishlistCount}
                   </span>
                 )}
-              </a>
+              </button>
 
               {/* Shopping Bag Drawer Icon */}
               <button
                 onClick={openCart}
-                className="p-2 text-gray-800 hover:text-black transition-colors relative"
+                className="p-2 text-gray-800 hover:text-amber-800 transition-colors relative"
                 aria-label="Shopping Bag"
+                title="Shopping Bag"
               >
                 <ShoppingBag size={22} />
                 {cartCount > 0 && (

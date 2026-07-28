@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, Suspense } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PRODUCTS_DATA, Product } from "@/data/mockData";
@@ -11,10 +11,11 @@ import { Filter, ChevronRight, Sparkles } from "lucide-react";
 
 function ShopContent() {
   const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("category");
+  const categoryParam = searchParams.get("category");
+  const filterParam = searchParams.get("filter");
 
   const [filters, setFilters] = useState<FilterState>({
-    categories: initialCategory ? [initialCategory] : [],
+    categories: categoryParam ? [categoryParam] : [],
     sizes: [],
     colors: [],
     maxPrice: 25000,
@@ -22,6 +23,15 @@ function ShopContent() {
 
   const [sortBy, setSortBy] = useState<SortOption>("featured");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // Sync filters when searchParams URL changes
+  useEffect(() => {
+    if (categoryParam) {
+      setFilters((prev) => ({ ...prev, categories: [categoryParam] }));
+    } else {
+      setFilters((prev) => ({ ...prev, categories: [] }));
+    }
+  }, [categoryParam]);
 
   const handleClearFilters = () => {
     setFilters({
@@ -35,6 +45,13 @@ function ShopContent() {
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
     let result = [...PRODUCTS_DATA];
+
+    // Filter by Special URL Param (e.g. ?filter=new-arrivals or ?filter=sale)
+    if (filterParam === "new-arrivals") {
+      result = result.filter((p) => p.isNewArrival);
+    } else if (filterParam === "sale") {
+      result = result.filter((p) => p.tag.includes("%") || p.tag.includes("OFF") || p.tag.includes("SALE"));
+    }
 
     // Filter by Category
     if (filters.categories.length > 0) {
@@ -76,7 +93,7 @@ function ShopContent() {
     }
 
     return result;
-  }, [filters, sortBy]);
+  }, [filters, sortBy, filterParam]);
 
   return (
     <div className="bg-white min-h-screen">
