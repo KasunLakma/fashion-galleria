@@ -14,6 +14,7 @@ import {
   Store,
   Menu,
   X,
+  UserCog,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -44,19 +45,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       name: "Dashboard",
       href: "/admin",
       icon: LayoutDashboard,
-      roles: ["Owner", "Staff"],
+      roles: ["Super Admin", "Owner", "Staff"],
     },
     {
       name: "Order Fulfillment",
       href: "/admin/orders",
       icon: ShoppingBag,
-      roles: ["Owner", "Staff"],
+      roles: ["Super Admin", "Owner", "Staff"],
     },
     {
       name: "Products & Stock",
       href: "/admin/products",
       icon: Package,
-      roles: ["Owner", "Staff"],
+      roles: ["Super Admin", "Owner", "Staff"],
+    },
+    {
+      name: "Manage Admins",
+      href: "/admin/admins",
+      icon: UserCog,
+      roles: ["Super Admin", "Owner"],
     },
   ];
 
@@ -100,7 +107,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Active Role Badge */}
             <div className="mt-4 flex items-center space-x-2 bg-stone-900 px-3 py-2 rounded-xs border border-stone-800 text-xs">
-              {adminUser?.role === "Owner" ? (
+              {adminUser?.role === "Super Admin" ? (
+                <>
+                  <ShieldCheck size={16} className="text-amber-400 shrink-0" />
+                  <div>
+                    <span className="block font-bold text-white text-[11px]">SUPER ADMIN</span>
+                    <span className="text-[9px] text-amber-400 uppercase font-semibold">User Control</span>
+                  </div>
+                </>
+              ) : adminUser?.role === "Owner" ? (
                 <>
                   <ShieldCheck size={16} className="text-amber-400 shrink-0" />
                   <div>
@@ -122,26 +137,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Navigation Links */}
           <nav className="p-4 space-y-1.5">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
+            {navItems
+              .filter((item) => !adminUser?.role || item.roles.includes(adminUser.role))
+              .map((item) => {
+                const isActive = pathname === item.href;
+                const Icon = item.icon;
 
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setIsMobileSidebarOpen(false)}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-xs text-xs font-semibold uppercase tracking-wider transition-all ${
-                    isActive
-                      ? "bg-amber-700 text-white font-bold shadow-xs"
-                      : "text-stone-400 hover:bg-stone-900 hover:text-white"
-                  }`}
-                >
-                  <Icon size={18} />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsMobileSidebarOpen(false)}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-xs text-xs font-semibold uppercase tracking-wider transition-all ${
+                      isActive
+                        ? "bg-amber-700 text-white font-bold shadow-xs"
+                        : "text-stone-400 hover:bg-stone-900 hover:text-white"
+                    }`}
+                  >
+                    <Icon size={18} />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
           </nav>
         </div>
 

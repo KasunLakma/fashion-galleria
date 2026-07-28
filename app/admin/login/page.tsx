@@ -10,14 +10,16 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { login } = useAdminAuth();
 
-  const [selectedRole, setSelectedRole] = useState<AdminRole>("Owner");
-  const [email, setEmail] = useState("owner@fashiongalleria.lk");
+  const [selectedRole, setSelectedRole] = useState<AdminRole>("Super Admin");
+  const [email, setEmail] = useState("superadmin@fashiongalleria.lk");
   const [password, setPassword] = useState("••••••••");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRoleToggle = (role: AdminRole) => {
     setSelectedRole(role);
-    if (role === "Owner") {
+    if (role === "Super Admin") {
+      setEmail("superadmin@fashiongalleria.lk");
+    } else if (role === "Owner") {
       setEmail("owner@fashiongalleria.lk");
     } else {
       setEmail("staff@fashiongalleria.lk");
@@ -55,36 +57,52 @@ export default function AdminLoginPage() {
             <label className="block text-[11px] font-bold uppercase tracking-widest text-stone-400 text-center">
               Select Access Role
             </label>
-            <div className="grid grid-cols-2 gap-2 bg-stone-900 p-1 rounded-xs border border-stone-800">
+            <div className="grid grid-cols-3 gap-1 bg-stone-900 p-1 rounded-xs border border-stone-800">
               <button
                 type="button"
-                onClick={() => handleRoleToggle("Owner")}
-                className={`py-2 text-xs uppercase tracking-wider font-bold rounded-xs transition-all ${
-                  selectedRole === "Owner"
+                onClick={() => handleRoleToggle("Super Admin")}
+                className={`py-2 text-[11px] uppercase tracking-wider font-bold rounded-xs transition-all ${
+                  selectedRole === "Super Admin"
                     ? "bg-amber-700 text-white shadow-xs"
                     : "text-stone-400 hover:text-white"
                 }`}
               >
-                Owner Role
+                Super Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRoleToggle("Owner")}
+                className={`py-2 text-[11px] uppercase tracking-wider font-bold rounded-xs transition-all ${
+                  selectedRole === "Owner"
+                    ? "bg-amber-800 text-white shadow-xs"
+                    : "text-stone-400 hover:text-white"
+                }`}
+              >
+                Owner
               </button>
               <button
                 type="button"
                 onClick={() => handleRoleToggle("Staff")}
-                className={`py-2 text-xs uppercase tracking-wider font-bold rounded-xs transition-all ${
+                className={`py-2 text-[11px] uppercase tracking-wider font-bold rounded-xs transition-all ${
                   selectedRole === "Staff"
                     ? "bg-stone-800 text-white shadow-xs border border-stone-700"
                     : "text-stone-400 hover:text-white"
                 }`}
               >
-                Staff Role
+                Staff
               </button>
             </div>
           </div>
 
           {/* Role Access Callout */}
           <div className="bg-stone-900/80 border border-stone-800 p-3 rounded-xs text-[11px] text-stone-400">
-            {selectedRole === "Owner" ? (
+            {selectedRole === "Super Admin" ? (
               <div className="flex items-center space-x-2 text-amber-400 font-semibold">
+                <ShieldCheck size={16} className="shrink-0" />
+                <span>Super Admin Access: Full system permissions &amp; Admin User Management.</span>
+              </div>
+            ) : selectedRole === "Owner" ? (
+              <div className="flex items-center space-x-2 text-amber-400/90 font-semibold">
                 <ShieldCheck size={16} className="shrink-0" />
                 <span>Full Owner Access: Financial metrics, order processing, and inventory CRUD.</span>
               </div>

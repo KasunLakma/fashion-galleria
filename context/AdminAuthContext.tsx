@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-export type AdminRole = "Owner" | "Staff";
+export type AdminRole = "Super Admin" | "Owner" | "Staff";
 
 export interface AdminUser {
   email: string;
@@ -14,7 +14,7 @@ interface AdminAuthContextType {
   adminUser: AdminUser | null;
   role: AdminRole | null;
   isAuthenticated: boolean;
-  login: (email: string, roleChoice: AdminRole) => boolean;
+  login: (email: string, roleChoice: AdminRole, customName?: string) => boolean;
   logout: () => void;
 }
 
@@ -34,10 +34,14 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, []);
 
-  const login = (email: string, roleChoice: AdminRole) => {
+  const login = (email: string, roleChoice: AdminRole, customName?: string) => {
+    let defaultName = "Fulfillment Staff";
+    if (roleChoice === "Super Admin") defaultName = "Super Administrator";
+    else if (roleChoice === "Owner") defaultName = "Atelier Owner";
+
     const user: AdminUser = {
       email,
-      name: roleChoice === "Owner" ? "Atelier Owner" : "Fulfillment Staff",
+      name: customName || defaultName,
       role: roleChoice,
     };
     setAdminUser(user);
