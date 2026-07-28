@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Menu, Search, User, Heart, ShoppingBag } from "lucide-react";
 import MobileNavDrawer from "./MobileNavDrawer";
 import CartDrawer from "./CartDrawer";
@@ -32,24 +33,32 @@ export default function Header() {
 
               {/* Desktop Nav Links */}
               <nav className="hidden lg:flex items-center space-x-8 text-xs font-semibold tracking-widest uppercase">
-                <a
-                  href="#women"
+                <Link
+                  href="/shop"
+                  className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group"
+                >
+                  <span>Shop All</span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-700 transition-all duration-300 group-hover:w-full" />
+                </Link>
+
+                <Link
+                  href="/shop?category=Dresses"
                   className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group"
                 >
                   <span>Women</span>
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-700 transition-all duration-300 group-hover:w-full" />
-                </a>
+                </Link>
 
-                <a
-                  href="#men"
+                <Link
+                  href="/shop?category=Men%27s%20Apparel"
                   className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group"
                 >
                   <span>Men</span>
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-700 transition-all duration-300 group-hover:w-full" />
-                </a>
+                </Link>
 
-                <a
-                  href="#new-arrivals"
+                <Link
+                  href="/shop"
                   className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group flex items-center space-x-1"
                 >
                   <span>New Arrivals</span>
@@ -57,30 +66,30 @@ export default function Header() {
                     NEW
                   </span>
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-700 transition-all duration-300 group-hover:w-full" />
-                </a>
+                </Link>
 
-                <a
-                  href="#sale"
+                <Link
+                  href="/shop"
                   className="text-red-700 hover:text-red-800 transition-colors py-2 relative group flex items-center space-x-1 font-bold"
                 >
                   <span>Sale</span>
                   <span className="bg-red-100 text-red-700 text-[9px] px-1.5 py-0.2 rounded font-extrabold tracking-normal">
                     %
                   </span>
-                </a>
+                </Link>
               </nav>
             </div>
 
             {/* Center: Brand Logo */}
             <div className="flex-1 lg:flex-none text-center">
-              <a href="/" className="inline-block group">
+              <Link href="/" className="inline-block group">
                 <span className="font-serif text-xl sm:text-2xl md:text-3xl font-bold tracking-[0.2em] text-black uppercase block leading-none">
                   Fashion Galleria
                 </span>
                 <span className="text-[9px] tracking-[0.35em] text-amber-700 uppercase font-semibold block mt-0.5 group-hover:text-black transition-colors">
                   Sri Lanka
                 </span>
-              </a>
+              </Link>
             </div>
 
             {/* Right: Icons (Search, Account, Wishlist, Cart) */}

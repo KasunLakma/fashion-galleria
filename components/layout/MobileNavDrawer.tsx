@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { X, ChevronDown, ChevronRight, Search, MapPin, Phone } from "lucide-react";
 
 interface MobileNavDrawerProps {
@@ -125,14 +126,14 @@ export default function MobileNavDrawer({ isOpen, onClose, onOpenSearch }: Mobil
                   {isExpanded && (
                     <div className="bg-stone-50 px-6 py-2 space-y-2 border-t border-gray-100">
                       {section.subItems.map((sub, idx) => (
-                        <a
+                        <Link
                           key={idx}
-                          href="#"
+                          href="/shop"
                           onClick={onClose}
                           className="block text-xs text-stone-700 hover:text-black hover:font-semibold py-1 transition-colors"
                         >
                           {sub}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   )}
