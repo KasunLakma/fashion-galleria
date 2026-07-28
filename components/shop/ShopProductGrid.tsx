@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Product } from "@/data/mockData";
+import { useCart } from "@/context/CartContext";
 import { Heart, ShoppingBag, Check, Star, RefreshCw } from "lucide-react";
 
 interface ShopProductGridProps {
@@ -14,6 +15,7 @@ export default function ShopProductGrid({ products, onResetFilters }: ShopProduc
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const [selectedSizeMap, setSelectedSizeMap] = useState<Record<string, string>>({});
+  const { addToCart } = useCart();
 
   const toggleWishlist = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -26,6 +28,8 @@ export default function ShopProductGrid({ products, onResetFilters }: ShopProduc
   const handleQuickAdd = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
+    const sz = selectedSizeMap[product.id] || product.sizes[0];
+    addToCart(product, sz);
     setAddedProductId(product.id);
     setTimeout(() => {
       setAddedProductId(null);
@@ -37,6 +41,7 @@ export default function ShopProductGrid({ products, onResetFilters }: ShopProduc
     e.stopPropagation();
     setSelectedSizeMap((prev) => ({ ...prev, [productId]: size }));
   };
+
 
   if (products.length === 0) {
     return (

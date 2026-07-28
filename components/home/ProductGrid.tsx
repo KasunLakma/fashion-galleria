@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PRODUCTS_DATA, Product } from "@/data/mockData";
+import { useCart } from "@/context/CartContext";
 import { Heart, ShoppingBag, Check, Star } from "lucide-react";
 
 export default function ProductGrid() {
@@ -9,6 +10,7 @@ export default function ProductGrid() {
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const [selectedSizeMap, setSelectedSizeMap] = useState<Record<string, string>>({});
+  const { addToCart } = useCart();
 
   const filterProducts = () => {
     if (activeTab === "NEW") return PRODUCTS_DATA.filter((p) => p.isNewArrival);
@@ -26,6 +28,8 @@ export default function ProductGrid() {
   };
 
   const handleQuickAdd = (product: Product) => {
+    const sz = selectedSizeMap[product.id] || product.sizes[0];
+    addToCart(product, sz);
     setAddedProductId(product.id);
     setTimeout(() => {
       setAddedProductId(null);
@@ -35,6 +39,7 @@ export default function ProductGrid() {
   const handleSelectSize = (productId: string, size: string) => {
     setSelectedSizeMap((prev) => ({ ...prev, [productId]: size }));
   };
+
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">

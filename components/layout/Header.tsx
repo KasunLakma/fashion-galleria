@@ -3,17 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, Search, User, Heart, ShoppingBag } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 import MobileNavDrawer from "./MobileNavDrawer";
 import CartDrawer from "./CartDrawer";
 import SearchModal from "./SearchModal";
 
 export default function Header() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { cartCount, openCart } = useCart();
 
-  // Cart item count (mock count = 1 for initial preview)
-  const cartCount = 1;
   const wishlistCount = 0;
 
   return (
@@ -128,7 +127,7 @@ export default function Header() {
 
               {/* Shopping Bag Drawer Icon */}
               <button
-                onClick={() => setIsCartOpen(true)}
+                onClick={openCart}
                 className="p-2 text-gray-800 hover:text-black transition-colors relative"
                 aria-label="Shopping Bag"
               >
@@ -151,10 +150,7 @@ export default function Header() {
         onOpenSearch={() => setIsSearchOpen(true)}
       />
 
-      <CartDrawer
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-      />
+      <CartDrawer />
 
       <SearchModal
         isOpen={isSearchOpen}
@@ -163,3 +159,4 @@ export default function Header() {
     </>
   );
 }
+

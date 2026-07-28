@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Product } from "@/data/mockData";
+import { useCart } from "@/context/CartContext";
 import {
   Star,
   Plus,
@@ -24,6 +26,9 @@ interface ProductDetailsRightProps {
 }
 
 export default function ProductDetailsRight({ product }: ProductDetailsRightProps) {
+  const router = useRouter();
+  const { addToCart } = useCart();
+
   const [selectedSize, setSelectedSize] = useState<string>(
     product.sizes.find((s) => !product.outOfStockSizes?.includes(s)) || product.sizes[0]
   );
@@ -53,11 +58,18 @@ export default function ProductDetailsRight({ product }: ProductDetailsRightProp
   };
 
   const handleAddToBag = () => {
+    addToCart(product, selectedSize, selectedColor, quantity);
     setIsAddedToBag(true);
     setTimeout(() => {
       setIsAddedToBag(false);
     }, 2500);
   };
+
+  const handleBuyNow = () => {
+    addToCart(product, selectedSize, selectedColor, quantity);
+    router.push("/checkout");
+  };
+
 
   const discountPercent = Math.round(
     ((product.originalPrice - product.discountedPrice) / product.originalPrice) * 100
@@ -244,13 +256,13 @@ export default function ProductDetailsRight({ product }: ProductDetailsRightProp
           </button>
 
           {/* Primary CTA: Buy It Now / COD Checkout */}
-          <Link
-            href={`/checkout?product=${product.id}&size=${selectedSize}&qty=${quantity}`}
+          <button
+            onClick={handleBuyNow}
             className="w-full py-4 px-6 text-xs uppercase tracking-[0.2em] font-extrabold bg-gradient-to-r from-amber-700 via-amber-800 to-stone-900 text-white hover:from-amber-800 hover:to-black transition-all flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
           >
             <Zap size={16} className="text-amber-300 animate-bounce" />
             <span>BUY NOW (COD CHECKOUT)</span>
-          </Link>
+          </button>
         </div>
       </div>
 
