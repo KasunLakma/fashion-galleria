@@ -40,18 +40,18 @@ export default function HeroBanner() {
         {/* Prominent CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 max-w-md mx-auto">
           <a
-            href="#women"
+            href="/shop"
             className="w-full sm:w-auto flex-1 bg-white text-black hover:bg-amber-600 hover:text-white transition-all duration-300 text-xs font-bold uppercase tracking-[0.2em] px-8 py-4 flex items-center justify-center space-x-2 shadow-lg hover:shadow-2xl group"
           >
-            <span>SHOP WOMEN</span>
+            <span>SHOP ATELIER</span>
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </a>
 
           <a
-            href="#men"
+            href="/shop"
             className="w-full sm:w-auto flex-1 bg-transparent border-2 border-white text-white hover:bg-white hover:text-black transition-all duration-300 text-xs font-bold uppercase tracking-[0.2em] px-8 py-4 flex items-center justify-center space-x-2 group"
           >
-            <span>SHOP MEN</span>
+            <span>NEW ARRIVALS</span>
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </a>
         </div>

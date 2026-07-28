@@ -21,7 +21,7 @@ const popularCategories = [
   { name: "New Arrivals", tag: "NEW" },
   { name: "Workwear Essentials", tag: "HOT" },
   { name: "Dresses & Jumpsuits", tag: "" },
-  { name: "Men's Smart Casual", tag: "" },
+  { name: "Resort & Linen Edit", tag: "" },
   { name: "Clearance Sale", tag: "UP TO 50% OFF" },
 ];
 
