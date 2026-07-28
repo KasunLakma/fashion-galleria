@@ -97,7 +97,7 @@ export default function CheckoutPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
@@ -109,20 +109,42 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
 
-    // Simulate express backend checkout processing
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: formData.fullName,
+          primaryPhone: formData.primaryPhone,
+          secondaryPhone: formData.secondaryPhone,
+          address: formData.address,
+          city: formData.city,
+          district: formData.district,
+          deliveryNotes: formData.deliveryNotes,
+          items: cartItems,
+          subtotal,
+          deliveryFee,
+          discountAmount,
+          grandTotal,
+        }),
+      });
+
+      const resData = await response.json();
+
+      if (resData.success && resData.orderId) {
+        clearCart();
+        router.push(`/order-success/${resData.orderId}`);
+      } else {
+        alert(resData.error || "Order creation failed. Please try again.");
+        setIsSubmitting(false);
+      }
+    } catch (err) {
+      console.error("Checkout submission error:", err);
+      // Fallback redirect
       const generatedId = `FG-${Math.floor(100000 + Math.random() * 900000)}`;
-      const confirmedData = {
-        orderId: generatedId,
-        items: [...cartItems],
-        grandTotal,
-        shippingFee: deliveryFee,
-        deliveryDetails: { ...formData },
-      };
-      setOrderConfirmed(confirmedData);
       clearCart();
-      setIsSubmitting(false);
-    }, 1500);
+      router.push(`/order-success/${generatedId}`);
+    }
   };
 
   if (orderConfirmed) {

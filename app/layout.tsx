@@ -5,6 +5,7 @@ import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Providers from "@/components/providers/Providers";
+import Pixels from "@/components/analytics/Pixels";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -37,6 +38,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-white text-gray-900 font-sans selection:bg-amber-100 selection:text-amber-900">
         <Providers>
+          <Pixels />
           <AnnouncementBar />
           <Header />
           <main className="flex-1 w-full">{children}</main>
@@ -46,4 +48,5 @@ export default function RootLayout({
     </html>
   );
 }
+
 
