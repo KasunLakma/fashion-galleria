@@ -31,7 +31,7 @@ export default function Header() {
               </button>
 
               {/* Desktop Nav Links */}
-              <nav className="hidden lg:flex items-center space-x-8 text-xs font-semibold tracking-widest uppercase">
+              <nav className="hidden lg:flex items-center space-x-7 text-xs font-semibold tracking-widest uppercase">
                 <Link
                   href="/shop"
                   className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group"
@@ -44,15 +44,23 @@ export default function Header() {
                   href="/shop?category=Dresses"
                   className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group"
                 >
-                  <span>Women</span>
+                  <span>Dresses</span>
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-700 transition-all duration-300 group-hover:w-full" />
                 </Link>
 
                 <Link
-                  href="/shop?category=Men%27s%20Apparel"
+                  href="/shop?category=Tops%20%26%20Shirts"
                   className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group"
                 >
-                  <span>Men</span>
+                  <span>Tops & Blouses</span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-700 transition-all duration-300 group-hover:w-full" />
+                </Link>
+
+                <Link
+                  href="/shop?category=Trousers%20%26%20Pants"
+                  className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group"
+                >
+                  <span>Trousers & Skirts</span>
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-700 transition-all duration-300 group-hover:w-full" />
                 </Link>
 

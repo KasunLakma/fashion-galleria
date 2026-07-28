@@ -12,25 +12,20 @@ interface MobileNavDrawerProps {
 
 const navSections = [
   {
-    title: "WOMEN",
+    title: "WOMEN'S COLLECTION",
     badge: "",
-    subItems: ["All Women", "New Arrivals", "Dresses", "Workwear", "Linen Edit", "Tops & Blouses", "Trousers & Skirts"],
-  },
-  {
-    title: "MEN",
-    badge: "",
-    subItems: ["All Men", "Smart Linen Shirts", "Casual Tops", "Chinos & Trousers", "Suits & Blazers"],
+    subItems: ["All Apparel", "Dresses & Jumpsuits", "Workwear Blouses", "Trousers & Skirts", "Accessories & Bags"],
   },
   {
     title: "NEW ARRIVALS",
     badge: "NEW",
-    subItems: ["Resort '26", "Workwear Luxe", "Weekend Casual"],
+    subItems: ["Resort '26 Atelier", "Workwear Luxe", "Weekend Linen Edit"],
   },
   {
     title: "CLEARANCE SALE",
     badge: "SALE",
     isSale: true,
-    subItems: ["Up to 50% Off Women", "Up to 50% Off Men"],
+    subItems: ["Up to 50% Off Dresses", "Up to 50% Off Workwear"],
   },
 ];
 

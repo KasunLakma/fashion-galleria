@@ -8,10 +8,8 @@ interface SizeGuideModalProps {
   category?: string;
 }
 
-export default function SizeGuideModal({ isOpen, onClose, category }: SizeGuideModalProps) {
+export default function SizeGuideModal({ isOpen, onClose }: SizeGuideModalProps) {
   if (!isOpen) return null;
-
-  const isMens = category?.toLowerCase().includes("men");
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -29,10 +27,10 @@ export default function SizeGuideModal({ isOpen, onClose, category }: SizeGuideM
               <Ruler size={20} className="text-amber-400" />
               <div>
                 <h3 className="font-serif text-lg tracking-widest uppercase font-bold">
-                  Fashion Galleria Size Guide
+                  Women&apos;s Size & Measurement Guide
                 </h3>
                 <p className="text-[10px] text-stone-300 uppercase tracking-wider">
-                  Sri Lankan & International Standard Fit
+                  Sri Lankan & International UK/US Standard Fit
                 </p>
               </div>
             </div>
@@ -49,7 +47,7 @@ export default function SizeGuideModal({ isOpen, onClose, category }: SizeGuideM
             {/* Table */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900 mb-3 flex items-center justify-between">
-                <span>{isMens ? "Men's Apparel Size Chart (Inches)" : "Women's Dress & Tops Size Chart"}</span>
+                <span>Women&apos;s Dresses, Blouses & Trousers Size Chart</span>
                 <span className="text-[10px] text-amber-800 font-semibold">Standard Ceylon Fit</span>
               </h4>
 
@@ -58,97 +56,55 @@ export default function SizeGuideModal({ isOpen, onClose, category }: SizeGuideM
                   <thead className="bg-stone-100 uppercase tracking-wider text-[10px] text-stone-900 border-b border-stone-200 font-bold">
                     <tr>
                       <th className="px-4 py-3">Size Tag</th>
-                      <th className="px-4 py-3">{isMens ? "Chest (in)" : "UK Size"}</th>
-                      <th className="px-4 py-3">{isMens ? "Waist (in)" : "Bust (in)"}</th>
-                      <th className="px-4 py-3">{isMens ? "Neck (in)" : "Waist (in)"}</th>
-                      <th className="px-4 py-3">{isMens ? "Sleeve (in)" : "Hips (in)"}</th>
+                      <th className="px-4 py-3">UK Size</th>
+                      <th className="px-4 py-3">Bust (in)</th>
+                      <th className="px-4 py-3">Waist (in)</th>
+                      <th className="px-4 py-3">Hips (in)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-200 font-medium">
-                    {isMens ? (
-                      <>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">S</td>
-                          <td className="px-4 py-2.5">36 - 38&quot;</td>
-                          <td className="px-4 py-2.5">30 - 32&quot;</td>
-                          <td className="px-4 py-2.5">14.5&quot;</td>
-                          <td className="px-4 py-2.5">33&quot;</td>
-                        </tr>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">M</td>
-                          <td className="px-4 py-2.5">39 - 41&quot;</td>
-                          <td className="px-4 py-2.5">33 - 35&quot;</td>
-                          <td className="px-4 py-2.5">15.5&quot;</td>
-                          <td className="px-4 py-2.5">34&quot;</td>
-                        </tr>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">L</td>
-                          <td className="px-4 py-2.5">42 - 44&quot;</td>
-                          <td className="px-4 py-2.5">36 - 38&quot;</td>
-                          <td className="px-4 py-2.5">16.5&quot;</td>
-                          <td className="px-4 py-2.5">35&quot;</td>
-                        </tr>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">XL</td>
-                          <td className="px-4 py-2.5">45 - 47&quot;</td>
-                          <td className="px-4 py-2.5">39 - 41&quot;</td>
-                          <td className="px-4 py-2.5">17.5&quot;</td>
-                          <td className="px-4 py-2.5">36&quot;</td>
-                        </tr>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">XXL</td>
-                          <td className="px-4 py-2.5">48 - 50&quot;</td>
-                          <td className="px-4 py-2.5">42 - 44&quot;</td>
-                          <td className="px-4 py-2.5">18.5&quot;</td>
-                          <td className="px-4 py-2.5">37&quot;</td>
-                        </tr>
-                      </>
-                    ) : (
-                      <>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">XS</td>
-                          <td className="px-4 py-2.5">UK 6</td>
-                          <td className="px-4 py-2.5">31 - 32&quot;</td>
-                          <td className="px-4 py-2.5">24 - 25&quot;</td>
-                          <td className="px-4 py-2.5">34 - 35&quot;</td>
-                        </tr>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">S</td>
-                          <td className="px-4 py-2.5">UK 8</td>
-                          <td className="px-4 py-2.5">33 - 34&quot;</td>
-                          <td className="px-4 py-2.5">26 - 27&quot;</td>
-                          <td className="px-4 py-2.5">36 - 37&quot;</td>
-                        </tr>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">M</td>
-                          <td className="px-4 py-2.5">UK 10</td>
-                          <td className="px-4 py-2.5">35 - 36&quot;</td>
-                          <td className="px-4 py-2.5">28 - 29&quot;</td>
-                          <td className="px-4 py-2.5">38 - 39&quot;</td>
-                        </tr>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">L</td>
-                          <td className="px-4 py-2.5">UK 12</td>
-                          <td className="px-4 py-2.5">37 - 38&quot;</td>
-                          <td className="px-4 py-2.5">30 - 31&quot;</td>
-                          <td className="px-4 py-2.5">40 - 41&quot;</td>
-                        </tr>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">XL</td>
-                          <td className="px-4 py-2.5">UK 14</td>
-                          <td className="px-4 py-2.5">39 - 40&quot;</td>
-                          <td className="px-4 py-2.5">32 - 33&quot;</td>
-                          <td className="px-4 py-2.5">42 - 43&quot;</td>
-                        </tr>
-                        <tr className="hover:bg-amber-50/50">
-                          <td className="px-4 py-2.5 font-bold text-stone-900">XXL</td>
-                          <td className="px-4 py-2.5">UK 16</td>
-                          <td className="px-4 py-2.5">41 - 43&quot;</td>
-                          <td className="px-4 py-2.5">34 - 36&quot;</td>
-                          <td className="px-4 py-2.5">44 - 46&quot;</td>
-                        </tr>
-                      </>
-                    )}
+                    <tr className="hover:bg-amber-50/50">
+                      <td className="px-4 py-2.5 font-bold text-stone-900">XS</td>
+                      <td className="px-4 py-2.5">UK 6</td>
+                      <td className="px-4 py-2.5">31 - 32&quot;</td>
+                      <td className="px-4 py-2.5">24 - 25&quot;</td>
+                      <td className="px-4 py-2.5">34 - 35&quot;</td>
+                    </tr>
+                    <tr className="hover:bg-amber-50/50">
+                      <td className="px-4 py-2.5 font-bold text-stone-900">S</td>
+                      <td className="px-4 py-2.5">UK 8</td>
+                      <td className="px-4 py-2.5">33 - 34&quot;</td>
+                      <td className="px-4 py-2.5">26 - 27&quot;</td>
+                      <td className="px-4 py-2.5">36 - 37&quot;</td>
+                    </tr>
+                    <tr className="hover:bg-amber-50/50">
+                      <td className="px-4 py-2.5 font-bold text-stone-900">M</td>
+                      <td className="px-4 py-2.5">UK 10</td>
+                      <td className="px-4 py-2.5">35 - 36&quot;</td>
+                      <td className="px-4 py-2.5">28 - 29&quot;</td>
+                      <td className="px-4 py-2.5">38 - 39&quot;</td>
+                    </tr>
+                    <tr className="hover:bg-amber-50/50">
+                      <td className="px-4 py-2.5 font-bold text-stone-900">L</td>
+                      <td className="px-4 py-2.5">UK 12</td>
+                      <td className="px-4 py-2.5">37 - 38&quot;</td>
+                      <td className="px-4 py-2.5">30 - 31&quot;</td>
+                      <td className="px-4 py-2.5">40 - 41&quot;</td>
+                    </tr>
+                    <tr className="hover:bg-amber-50/50">
+                      <td className="px-4 py-2.5 font-bold text-stone-900">XL</td>
+                      <td className="px-4 py-2.5">UK 14</td>
+                      <td className="px-4 py-2.5">39 - 40&quot;</td>
+                      <td className="px-4 py-2.5">32 - 33&quot;</td>
+                      <td className="px-4 py-2.5">42 - 43&quot;</td>
+                    </tr>
+                    <tr className="hover:bg-amber-50/50">
+                      <td className="px-4 py-2.5 font-bold text-stone-900">XXL</td>
+                      <td className="px-4 py-2.5">UK 16</td>
+                      <td className="px-4 py-2.5">41 - 43&quot;</td>
+                      <td className="px-4 py-2.5">34 - 36&quot;</td>
+                      <td className="px-4 py-2.5">44 - 46&quot;</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>

@@ -22,7 +22,6 @@ const CATEGORY_OPTIONS = [
   "Dresses",
   "Tops & Shirts",
   "Trousers & Pants",
-  "Men's Apparel",
   "Accessories",
 ];
 
