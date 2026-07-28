@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, Search, User, Heart, ShoppingBag } from "lucide-react";
+import { Menu, Search, Heart, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import MobileNavDrawer from "./MobileNavDrawer";
 import CartDrawer from "./CartDrawer";
@@ -31,7 +31,15 @@ export default function Header() {
               </button>
 
               {/* Desktop Nav Links */}
-              <nav className="hidden lg:flex items-center space-x-7 text-xs font-semibold tracking-widest uppercase">
+              <nav className="hidden lg:flex items-center space-x-6 text-xs font-semibold tracking-widest uppercase">
+                <Link
+                  href="/"
+                  className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group"
+                >
+                  <span>Home</span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-amber-700 transition-all duration-300 group-hover:w-full" />
+                </Link>
+
                 <Link
                   href="/shop"
                   className="text-gray-900 hover:text-amber-700 transition-colors py-2 relative group"
@@ -99,7 +107,7 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* Right: Icons (Search, Account, Wishlist, Cart) */}
+            {/* Right: Icons (Search, Wishlist, Cart) */}
             <div className="flex items-center space-x-2 sm:space-x-4">
               {/* Search Icon */}
               <button
@@ -109,16 +117,6 @@ export default function Header() {
               >
                 <Search size={22} />
               </button>
-
-              {/* User Account Icon -> Admin / Staff Portal */}
-              <Link
-                href="/admin/login"
-                className="hidden sm:block p-2 text-gray-800 hover:text-amber-800 transition-colors"
-                aria-label="Admin & Staff Portal"
-                title="Admin & Staff Management Portal"
-              >
-                <User size={22} />
-              </Link>
 
               {/* Wishlist Icon */}
               <button
