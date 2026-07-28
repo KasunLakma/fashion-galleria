@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const announcements = [
@@ -11,7 +12,12 @@ const announcements = [
 ];
 
 export default function AnnouncementBar() {
+  const pathname = usePathname();
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   useEffect(() => {
     const timer = setInterval(() => {
