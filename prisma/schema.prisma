@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  title     String
+  itemCount String
+  image     String
+  link      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  name            String
+  category        String
+  originalPrice   Float
+  discountedPrice Float
+  rating          Float    @default(0.0)
+  reviewCount     Int      @default(0)
+  primaryImage    String
+  hoverImage      String
+  galleryImages   String[]
+  tag             String
+  tagColor        String?
+  sizes           String[]
+  outOfStockSizes String[]
+  colors          Json?
+  inStock         Boolean  @default(true)
+  isNewArrival    Boolean  @default(false)
+  isBestseller    Boolean  @default(false)
+  description     String?
+  fabricCare      String[]
+  shippingReturns String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Review {
+  id            String   @id @default(cuid())
+  author        String
+  location      String
+  rating        Float
+  title         String
+  comment       String
+  verifiedBuyer Boolean  @default(true)
+  purchasedItem String
+  date          String
+  createdAt     DateTime @default(now())
+}

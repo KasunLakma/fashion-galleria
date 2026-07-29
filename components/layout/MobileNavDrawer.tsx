@@ -144,7 +144,7 @@ export default function MobileNavDrawer({ isOpen, onClose, onOpenSearch }: Mobil
               </a>
               <a href="#" className="flex items-center space-x-2 text-xs font-semibold text-stone-800 uppercase tracking-wider">
                 <Phone size={16} className="text-amber-700" />
-                <span>CUSTOMER CARE: +94 11 700 8000</span>
+                <span>CUSTOMER CARE: 011 700 8000</span>
               </a>
             </div>
           </div>
