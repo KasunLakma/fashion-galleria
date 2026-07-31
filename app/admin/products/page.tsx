@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PRODUCTS_DATA, Product } from "@/data/mockData";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   Package,
   Plus,
@@ -11,9 +13,11 @@ import {
   CheckCircle2,
   X,
   Search,
-  Tag,
-  DollarSign,
-  Layers,
+  Upload,
+  Image as ImageIcon,
+  RefreshCw,
+  UploadCloud,
+  Check,
 } from "lucide-react";
 
 export default function AdminProductsPage() {
@@ -25,12 +29,20 @@ export default function AdminProductsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  // File Upload & Drag-and-Drop state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Add/Edit Form State
   const [formValues, setFormValues] = useState({
     name: "",
     category: "Dresses",
-    originalPrice: 10000,
-    discountedPrice: 8500,
+    originalPrice: 11990,
+    discountedPrice: 8990,
     primaryImage: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
     hoverImage: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80",
     tag: "NEW ARRIVAL",
@@ -39,14 +51,33 @@ export default function AdminProductsPage() {
     description: "Luxury Italian-grade linen wrap dress tailored for Sri Lankan tropical elegance.",
   });
 
+  // Fetch initial products from PostgreSQL endpoint if available
+  useEffect(() => {
+    fetch("/api/admin/products")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+          setProductsList((prev) => {
+            const existingIds = new Set(data.products.map((p: any) => p.id));
+            const merged = [...data.products, ...prev.filter((p) => !existingIds.has(p.id))];
+            return merged;
+          });
+        }
+      })
+      .catch((err) => console.warn("Prisma fetch products warning:", err));
+  }, []);
+
   const handleOpenAddModal = () => {
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setUploadStatus(null);
     setFormValues({
       name: "",
       category: "Dresses",
       originalPrice: 11990,
       discountedPrice: 8990,
-      primaryImage: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
-      hoverImage: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80",
+      primaryImage: "",
+      hoverImage: "",
       tag: "NEW ARRIVAL",
       sizes: "XS, S, M, L, XL",
       stock: 10,
@@ -57,6 +88,9 @@ export default function AdminProductsPage() {
 
   const handleOpenEditModal = (prod: Product) => {
     setEditingProduct(prod);
+    setSelectedFile(null);
+    setPreviewUrl(prod.primaryImage);
+    setUploadStatus(null);
     setFormValues({
       name: prod.name,
       category: prod.category,
@@ -71,51 +105,184 @@ export default function AdminProductsPage() {
     });
   };
 
-  const handleSaveProduct = (e: React.FormEvent) => {
-    e.preventDefault();
-    const sizesArray = formValues.sizes.split(",").map((s) => s.trim());
+  // Handle File Selection via Browse or Dropzone
+  const handleFileChange = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file (e.g. PNG, JPG, WEBP).");
+      return;
+    }
+    setSelectedFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+  };
 
-    if (editingProduct) {
-      // Update existing
-      setProductsList((prev) =>
-        prev.map((p) =>
-          p.id === editingProduct.id
-            ? {
-                ...p,
-                name: formValues.name,
-                category: formValues.category,
-                originalPrice: Number(formValues.originalPrice),
-                discountedPrice: Number(formValues.discountedPrice),
-                primaryImage: formValues.primaryImage,
-                hoverImage: formValues.hoverImage,
-                tag: formValues.tag,
-                sizes: sizesArray,
-                description: formValues.description,
-              }
-            : p
-        )
-      );
-      setEditingProduct(null);
-    } else {
-      // Add new product
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileChange(e.dataTransfer.files[0]);
+    }
+  };
+
+  // Storage Upload Logic (Firebase Storage with Data URL fallback)
+  const uploadImageFile = async (file: File): Promise<string> => {
+    setUploadStatus("Uploading image to Cloud Storage...");
+
+    // Try Firebase Storage upload first if storage is initialized
+    if (storage) {
+      try {
+        const storagePath = `products/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+        const storageRef = ref(storage, storagePath);
+        await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(storageRef);
+        return downloadUrl;
+      } catch (err) {
+        console.warn("Firebase storage upload error, falling back to data URL:", err);
+      }
+    }
+
+    // Fallback: Read file as Data URL (base64) so it is 100% reliable and displayable
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleSaveProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUploading(true);
+
+    let finalImageUrl = formValues.primaryImage;
+
+    // Perform file upload if a new image file was selected
+    if (selectedFile) {
+      try {
+        finalImageUrl = await uploadImageFile(selectedFile);
+      } catch (uploadErr) {
+        console.error("Upload error:", uploadErr);
+        alert("Image upload failed. Please try again.");
+        setIsUploading(false);
+        return;
+      }
+    }
+
+    if (!finalImageUrl) {
+      alert("Please upload a primary image file before saving.");
+      setIsUploading(false);
+      return;
+    }
+
+    const sizesArray = formValues.sizes.split(",").map((s) => s.trim());
+    const finalHoverUrl = formValues.hoverImage || finalImageUrl;
+
+    const payload = {
+      name: formValues.name,
+      category: formValues.category,
+      originalPrice: Number(formValues.originalPrice),
+      discountedPrice: Number(formValues.discountedPrice),
+      primaryImage: finalImageUrl,
+      hoverImage: finalHoverUrl,
+      tag: formValues.tag || "NEW",
+      sizes: sizesArray,
+      description: formValues.description,
+    };
+
+    try {
+      // Save to PostgreSQL database via API
+      const response = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const resData = await response.json();
+
+      if (resData.success && resData.product) {
+        const savedProd = resData.product;
+        if (editingProduct) {
+          setProductsList((prev) => prev.map((p) => (p.id === editingProduct.id ? savedProd : p)));
+        } else {
+          setProductsList((prev) => [savedProd, ...prev]);
+        }
+      } else {
+        // Fallback local update
+        if (editingProduct) {
+          setProductsList((prev) =>
+            prev.map((p) =>
+              p.id === editingProduct.id
+                ? {
+                    ...p,
+                    name: payload.name,
+                    category: payload.category,
+                    originalPrice: payload.originalPrice,
+                    discountedPrice: payload.discountedPrice,
+                    primaryImage: payload.primaryImage,
+                    hoverImage: payload.hoverImage,
+                    tag: payload.tag,
+                    sizes: payload.sizes,
+                    description: payload.description,
+                  }
+                : p
+            )
+          );
+        } else {
+          const newProd: Product = {
+            id: `prod-${Date.now()}`,
+            name: payload.name,
+            category: payload.category,
+            originalPrice: payload.originalPrice,
+            discountedPrice: payload.discountedPrice,
+            rating: 5.0,
+            reviewCount: 1,
+            primaryImage: payload.primaryImage,
+            hoverImage: payload.hoverImage,
+            tag: payload.tag,
+            sizes: payload.sizes,
+            inStock: true,
+            isNewArrival: true,
+            description: payload.description,
+          };
+          setProductsList((prev) => [newProd, ...prev]);
+        }
+      }
+    } catch (apiErr) {
+      console.warn("DB save warning, applying local state update:", apiErr);
       const newProd: Product = {
         id: `prod-${Date.now()}`,
-        name: formValues.name,
-        category: formValues.category,
-        originalPrice: Number(formValues.originalPrice),
-        discountedPrice: Number(formValues.discountedPrice),
+        name: payload.name,
+        category: payload.category,
+        originalPrice: payload.originalPrice,
+        discountedPrice: payload.discountedPrice,
         rating: 5.0,
         reviewCount: 1,
-        primaryImage: formValues.primaryImage,
-        hoverImage: formValues.hoverImage,
-        tag: formValues.tag || "NEW",
-        sizes: sizesArray,
+        primaryImage: payload.primaryImage,
+        hoverImage: payload.hoverImage,
+        tag: payload.tag,
+        sizes: payload.sizes,
         inStock: true,
         isNewArrival: true,
-        description: formValues.description,
+        description: payload.description,
       };
       setProductsList((prev) => [newProd, ...prev]);
+    } finally {
+      setIsUploading(false);
       setIsAddModalOpen(false);
+      setEditingProduct(null);
     }
   };
 
@@ -278,33 +445,52 @@ export default function AdminProductsPage() {
       {/* Add / Edit Product Modal */}
       {(isAddModalOpen || editingProduct) && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-xs" onClick={() => { setIsAddModalOpen(false); setEditingProduct(null); }} />
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-xs"
+            onClick={() => {
+              if (!isUploading) {
+                setIsAddModalOpen(false);
+                setEditingProduct(null);
+              }
+            }}
+          />
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative w-full max-w-xl bg-white shadow-2xl rounded-xs overflow-hidden z-10 animate-fade-in">
+              {/* Modal Header */}
               <div className="p-5 bg-stone-900 text-white flex items-center justify-between">
                 <h3 className="font-serif text-lg font-bold uppercase tracking-wider">
-                  {editingProduct ? `Edit Product: ${editingProduct.name}` : "Add New Product SKU"}
+                  {editingProduct ? `Edit Product: ${editingProduct.name}` : "ADD NEW PRODUCT SKU"}
                 </h3>
-                <button onClick={() => { setIsAddModalOpen(false); setEditingProduct(null); }} className="p-1 hover:bg-stone-800 rounded">
+                <button
+                  disabled={isUploading}
+                  onClick={() => {
+                    setIsAddModalOpen(false);
+                    setEditingProduct(null);
+                  }}
+                  className="p-1 hover:bg-stone-800 rounded text-stone-300 hover:text-white transition-colors"
+                >
                   <X size={20} />
                 </button>
               </div>
 
-              <form onSubmit={handleSaveProduct} className="p-6 space-y-4 text-xs max-h-[80vh] overflow-y-auto custom-scrollbar">
+              <form onSubmit={handleSaveProduct} className="p-6 space-y-5 text-xs max-h-[80vh] overflow-y-auto custom-scrollbar">
+                {/* Product Title */}
                 <div>
-                  <label className="block uppercase font-bold text-stone-900 mb-1">Product Title</label>
+                  <label className="block uppercase font-bold text-stone-900 mb-1">Product Title <span className="text-red-600">*</span></label>
                   <input
                     type="text"
                     required
+                    placeholder="e.g. Victoria Emerald Linen Wrap Dress"
                     value={formValues.name}
                     onChange={(e) => setFormValues({ ...formValues, name: e.target.value })}
-                    className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800"
+                    className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800 bg-white"
                   />
                 </div>
 
+                {/* Category & Tag Badge */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block uppercase font-bold text-stone-900 mb-1">Category</label>
+                    <label className="block uppercase font-bold text-stone-900 mb-1">Category <span className="text-red-600">*</span></label>
                     <select
                       value={formValues.category}
                       onChange={(e) => setFormValues({ ...formValues, category: e.target.value })}
@@ -325,79 +511,189 @@ export default function AdminProductsPage() {
                       placeholder="e.g. 25% OFF / NEW ARRIVAL"
                       value={formValues.tag}
                       onChange={(e) => setFormValues({ ...formValues, tag: e.target.value })}
-                      className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800"
+                      className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800 bg-white"
                     />
                   </div>
                 </div>
 
+                {/* Prices */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block uppercase font-bold text-stone-900 mb-1">Discounted Price (LKR)</label>
+                    <label className="block uppercase font-bold text-stone-900 mb-1">Discounted Price (LKR) <span className="text-red-600">*</span></label>
                     <input
                       type="number"
                       required
                       value={formValues.discountedPrice}
                       onChange={(e) => setFormValues({ ...formValues, discountedPrice: Number(e.target.value) })}
-                      className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800 font-bold"
+                      className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800 font-bold bg-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block uppercase font-bold text-stone-900 mb-1">Original Price (LKR)</label>
+                    <label className="block uppercase font-bold text-stone-900 mb-1">Original Price (LKR) <span className="text-red-600">*</span></label>
                     <input
                       type="number"
                       required
                       value={formValues.originalPrice}
                       onChange={(e) => setFormValues({ ...formValues, originalPrice: Number(e.target.value) })}
-                      className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800"
+                      className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800 bg-white"
                     />
                   </div>
                 </div>
 
+                {/* Available Sizes */}
                 <div>
                   <label className="block uppercase font-bold text-stone-900 mb-1">Available Sizes (Comma separated)</label>
                   <input
                     type="text"
                     value={formValues.sizes}
                     onChange={(e) => setFormValues({ ...formValues, sizes: e.target.value })}
-                    className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800"
+                    className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800 bg-white"
                   />
                 </div>
 
+                {/* UPLOAD PRIMARY IMAGE FILE INPUT & DRAG-AND-DROP DROPZONE WITH PREVIEW */}
                 <div>
-                  <label className="block uppercase font-bold text-stone-900 mb-1">Primary Image URL</label>
+                  <label className="block uppercase font-bold text-stone-900 mb-1">
+                    UPLOAD PRIMARY IMAGE <span className="text-red-600">*</span>
+                  </label>
+
+                  {/* Hidden File Input */}
                   <input
-                    type="text"
-                    required
-                    value={formValues.primaryImage}
-                    onChange={(e) => setFormValues({ ...formValues, primaryImage: e.target.value })}
-                    className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800"
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleFileChange(e.target.files[0]);
+                      }
+                    }}
                   />
+
+                  {/* Dropzone & Preview Container */}
+                  <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`relative border-2 border-dashed rounded-xs p-4 text-center cursor-pointer transition-all ${
+                      isDragOver
+                        ? "border-amber-800 bg-amber-50 shadow-md ring-2 ring-amber-800/30"
+                        : previewUrl
+                        ? "border-stone-300 bg-stone-50 hover:border-amber-800"
+                        : "border-stone-300 bg-white hover:border-amber-800 hover:bg-stone-50"
+                    }`}
+                  >
+                    {previewUrl ? (
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2">
+                        {/* Image Preview Thumbnail */}
+                        <div className="flex items-center space-x-3">
+                          <div className="w-20 h-24 relative rounded-xs overflow-hidden border-2 border-amber-800 shadow-md bg-stone-100 shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={previewUrl}
+                              alt="Selected Primary Image Preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <span className="absolute bottom-0 inset-x-0 bg-stone-900/80 text-white text-[8px] font-bold text-center py-0.5 uppercase">
+                              PREVIEW
+                            </span>
+                          </div>
+
+                          <div className="text-left space-y-1">
+                            <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[9px] font-extrabold px-2 py-0.5 rounded uppercase inline-flex items-center space-x-1">
+                              <Check size={10} />
+                              <span>IMAGE SELECTED</span>
+                            </span>
+                            <h5 className="font-bold text-stone-900 text-xs truncate max-w-[200px]">
+                              {selectedFile ? selectedFile.name : "Current Image URL Loaded"}
+                            </h5>
+                            <p className="text-[10px] text-stone-500">
+                              {selectedFile
+                                ? `${(selectedFile.size / 1024).toFixed(1)} KB • Click or drop to change`
+                                : "Click box or drag file to replace with new image upload"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedFile(null);
+                            setPreviewUrl("");
+                            setFormValues({ ...formValues, primaryImage: "" });
+                          }}
+                          className="text-stone-400 hover:text-red-700 text-xs uppercase font-bold underline px-2 py-1"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="py-6 space-y-2">
+                        <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto">
+                          <UploadCloud size={24} />
+                        </div>
+                        <h4 className="font-serif text-xs font-bold uppercase tracking-wider text-stone-900">
+                          Click to browse gallery or drag and drop image file
+                        </h4>
+                        <p className="text-[10px] text-stone-500">
+                          Supports PNG, JPG, JPEG, or WEBP (Image will be uploaded to cloud storage)
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
+                {/* Description */}
                 <div>
                   <label className="block uppercase font-bold text-stone-900 mb-1">Product Description</label>
                   <textarea
                     rows={3}
+                    placeholder="Enter garment details, fabric composition, and care instructions..."
                     value={formValues.description}
                     onChange={(e) => setFormValues({ ...formValues, description: e.target.value })}
-                    className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800"
+                    className="w-full p-2.5 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800 bg-white"
                   />
                 </div>
 
-                <div className="pt-4 flex justify-end space-x-2 border-t border-stone-200">
+                {uploadStatus && (
+                  <p className="text-[11px] font-bold text-amber-800 flex items-center space-x-1">
+                    <RefreshCw size={12} className="animate-spin" />
+                    <span>{uploadStatus}</span>
+                  </p>
+                )}
+
+                {/* Action Buttons */}
+                <div className="pt-4 flex items-center justify-end space-x-3 border-t border-stone-200">
                   <button
                     type="button"
-                    onClick={() => { setIsAddModalOpen(false); setEditingProduct(null); }}
-                    className="px-4 py-2.5 border border-stone-300 uppercase font-bold text-stone-700 hover:bg-stone-100"
+                    disabled={isUploading}
+                    onClick={() => {
+                      setIsAddModalOpen(false);
+                      setEditingProduct(null);
+                    }}
+                    className="px-4 py-2.5 border border-stone-300 uppercase font-bold text-stone-700 hover:bg-stone-100 rounded-xs"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-black text-white uppercase font-bold hover:bg-amber-800 transition-colors"
+                    disabled={isUploading}
+                    className="px-6 py-2.5 bg-stone-900 hover:bg-amber-800 text-white uppercase font-bold tracking-wider rounded-xs transition-colors flex items-center space-x-2"
                   >
-                    Save SKU
+                    {isUploading ? (
+                      <>
+                        <RefreshCw size={14} className="animate-spin text-amber-400" />
+                        <span>UPLOADING & SAVING...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={14} />
+                        <span>{editingProduct ? "UPDATE SKU" : "SAVE SKU TO DATABASE"}</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
