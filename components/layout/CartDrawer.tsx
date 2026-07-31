@@ -97,26 +97,28 @@ export default function CartDrawer() {
           </div>
 
           {/* Free Shipping Progress Bar */}
-          <div className="bg-stone-50 p-4 border-b border-stone-200">
-            <div className="flex items-center space-x-2 text-xs font-medium text-stone-800 mb-2">
-              <Truck size={16} className="text-amber-800 shrink-0" />
-              {remainingForFreeShipping > 0 ? (
-                <span>
-                  Add <strong className="text-black">LKR {remainingForFreeShipping.toLocaleString()}</strong> more for <strong className="text-amber-800">FREE Express COD Shipping</strong>
-                </span>
-              ) : (
-                <span className="text-emerald-800 font-bold">
-                  🎉 Congratulations! You unlocked FREE Express Delivery!
-                </span>
-              )}
+          {cartItems.length > 0 && (
+            <div className="bg-stone-50 p-4 border-b border-stone-200">
+              <div className="flex items-center space-x-2 text-xs font-medium text-stone-800 mb-2">
+                <Truck size={16} className="text-amber-800 shrink-0" />
+                {remainingForFreeShipping > 0 ? (
+                  <span>
+                    Add <strong className="text-black">LKR {remainingForFreeShipping.toLocaleString()}</strong> more for <strong className="text-amber-800">FREE Express COD Shipping</strong>
+                  </span>
+                ) : (
+                  <span className="text-emerald-800 font-bold">
+                    🎉 Congratulations! You unlocked FREE Express Delivery!
+                  </span>
+                )}
+              </div>
+              <div className="w-full bg-stone-200 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-amber-800 h-full transition-all duration-500 rounded-full"
+                  style={{ width: `${shippingProgress}%` }}
+                />
+              </div>
             </div>
-            <div className="w-full bg-stone-200 h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-amber-800 h-full transition-all duration-500 rounded-full"
-                style={{ width: `${shippingProgress}%` }}
-              />
-            </div>
-          </div>
+          )}
 
           {/* Cart Items List */}
           <div className="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-4">

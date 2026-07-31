@@ -58,7 +58,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const saved = localStorage.getItem("fg_cart_v1");
       if (saved) {
-        setCartItems(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const filtered = parsed.filter(
+            (item: any) =>
+              item &&
+              item.id &&
+              item.title &&
+              item.title !== "Victoria Emerald Linen Wrap Dress" &&
+              typeof item.price === "number"
+          );
+          setCartItems(filtered);
+        }
       }
     } catch {
       // ignore
