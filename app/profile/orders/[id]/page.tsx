@@ -3,7 +3,7 @@
 import { use } from "react";
 import OrderTrackerView from "@/components/shop/OrderTrackerView";
 
-export default function OrderSuccessPage({
+export default function ProfileOrderDetailsPage({
   params,
 }: {
   params: Promise<{ id: string }>;

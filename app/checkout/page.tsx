@@ -50,6 +50,7 @@ export default function CheckoutPage() {
   // Form State
   const [formData, setFormData] = useState({
     fullName: "",
+    email: "",
     primaryPhone: "",
     secondaryPhone: "",
     address: "",
@@ -94,6 +95,9 @@ export default function CheckoutPage() {
     } else if (!/^[0-9+\-\s]{9,15}$/.test(formData.primaryPhone.trim())) {
       newErrors.primaryPhone = "Please enter a valid phone number (e.g. 0771234567)";
     }
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      newErrors.email = "Please enter a valid email address";
+    }
     if (!formData.address.trim()) newErrors.address = "Delivery Address is required";
     if (!formData.city.trim()) newErrors.city = "City is required";
 
@@ -126,6 +130,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerName: formData.fullName,
+          email: formData.email,
           primaryPhone: formData.primaryPhone,
           secondaryPhone: formData.secondaryPhone,
           address: formData.address,
@@ -315,22 +320,41 @@ export default function CheckoutPage() {
             </div>
 
             <form onSubmit={handleSubmitOrder} className="space-y-4">
-              {/* Full Name */}
-              <div>
-                <label className="block text-xs uppercase tracking-wider font-bold text-stone-900 mb-1.5">
-                  Full Name <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="fullName"
-                  placeholder="e.g. Dinuka Perera"
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  className={`w-full text-xs p-3 border rounded-xs focus:outline-none ${
-                    errors.fullName ? "border-red-500 bg-red-50" : "border-stone-300 focus:border-amber-800 bg-white"
-                  }`}
-                />
-                {errors.fullName && <p className="text-[11px] text-red-600 mt-1 font-semibold">{errors.fullName}</p>}
+              {/* Full Name & Email */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-bold text-stone-900 mb-1.5">
+                    Full Name <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="fullName"
+                    placeholder="e.g. Dinuka Perera"
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    className={`w-full text-xs p-3 border rounded-xs focus:outline-none ${
+                      errors.fullName ? "border-red-500 bg-red-50" : "border-stone-300 focus:border-amber-800 bg-white"
+                    }`}
+                  />
+                  {errors.fullName && <p className="text-[11px] text-red-600 mt-1 font-semibold">{errors.fullName}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-bold text-stone-900 mb-1.5">
+                    Email Address <span className="text-stone-400 font-normal">(For Order Tracking)</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="e.g. dinuka@example.com"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={`w-full text-xs p-3 border rounded-xs focus:outline-none ${
+                      errors.email ? "border-red-500 bg-red-50" : "border-stone-300 focus:border-amber-800 bg-white"
+                    }`}
+                  />
+                  {errors.email && <p className="text-[11px] text-red-600 mt-1 font-semibold">{errors.email}</p>}
+                </div>
               </div>
 
               {/* Phone Numbers */}

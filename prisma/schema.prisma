@@ -58,3 +58,65 @@ model Review {
   date          String
   createdAt     DateTime @default(now())
 }
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  phone     String?  @unique
+  address   String?
+  city      String?
+  district  String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id             String           @id @default(cuid())
+  orderNumber    String           @unique
+  userId         String?
+  user           User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName   String
+  email          String?
+  primaryPhone   String
+  secondaryPhone String?
+  address        String
+  city           String
+  district       String           @default("Colombo")
+  deliveryNotes  String?
+  paymentMethod  String           @default("Cash on Delivery (COD)")
+  status         String           @default("Pending")
+  subtotal       Float
+  deliveryFee    Float            @default(0)
+  discountAmount Float            @default(0)
+  grandTotal     Float
+  items          OrderItem[]
+  statusHistory  DeliveryStatus[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String?
+  title     String
+  size      String
+  color     String?
+  quantity  Int
+  price     Float
+  image     String?
+  createdAt DateTime @default(now())
+}
+
+model DeliveryStatus {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    String
+  note      String?
+  createdAt DateTime @default(now())
+}
+
