@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAdminAuth, AdminRole } from "@/context/AdminAuthContext";
-import { Lock, ShieldCheck, UserCheck, ArrowRight, Sparkles } from "lucide-react";
+import { Lock, ShieldCheck, UserCheck, ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -13,6 +13,7 @@ export default function AdminLoginPage() {
   const [selectedRole, setSelectedRole] = useState<AdminRole>("Super Admin");
   const [email, setEmail] = useState("superadmin@fashiongalleria.lk");
   const [password, setPassword] = useState("••••••••");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRoleToggle = (role: AdminRole) => {
@@ -133,13 +134,23 @@ export default function AdminLoginPage() {
               <label className="block text-xs uppercase tracking-wider font-bold text-stone-300 mb-1.5">
                 Password
               </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full text-xs p-3 bg-stone-900 border border-stone-800 text-white rounded-xs focus:outline-none focus:border-amber-500"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full text-xs p-3 pr-10 bg-stone-900 border border-stone-800 text-white rounded-xs focus:outline-none focus:border-amber-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-400 transition-colors p-1 focus:outline-none"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <button
