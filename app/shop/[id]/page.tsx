@@ -1,10 +1,46 @@
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { PRODUCTS_DATA } from "@/data/mockData";
+import { PRODUCTS_DATA, Product } from "@/data/mockData";
+import prisma from "@/lib/prisma";
 import ProductImageGallery from "@/components/shop/ProductImageGallery";
 import ProductDetailsRight from "@/components/shop/ProductDetailsRight";
 import RelatedProducts from "@/components/shop/RelatedProducts";
 import { ChevronRight } from "lucide-react";
+
+async function getProduct(id: string): Promise<Product | null> {
+  try {
+    const dbProduct = await prisma.product.findUnique({
+      where: { id },
+    });
+    if (dbProduct) {
+      return {
+        id: dbProduct.id,
+        name: dbProduct.name,
+        category: dbProduct.category,
+        originalPrice: dbProduct.originalPrice,
+        discountedPrice: dbProduct.discountedPrice,
+        rating: dbProduct.rating,
+        reviewCount: dbProduct.reviewCount,
+        primaryImage: dbProduct.primaryImage,
+        hoverImage: dbProduct.hoverImage || dbProduct.primaryImage,
+        galleryImages: dbProduct.galleryImages.length > 0 ? dbProduct.galleryImages : [dbProduct.primaryImage],
+        tag: dbProduct.tag || "NEW",
+        tagColor: dbProduct.tagColor || "bg-black text-white",
+        sizes: dbProduct.sizes.length > 0 ? dbProduct.sizes : ["M"],
+        inStock: dbProduct.inStock,
+        isNewArrival: dbProduct.isNewArrival,
+        isBestseller: dbProduct.isBestseller,
+        description: dbProduct.description || "",
+      };
+    }
+  } catch (err) {
+    console.warn("Error fetching product from DB:", err);
+  }
+  return PRODUCTS_DATA.find((p) => p.id === id) || null;
+}
 
 export async function generateMetadata({
   params,
@@ -12,7 +48,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = PRODUCTS_DATA.find((p) => p.id === id);
+  const product = await getProduct(id);
 
   if (!product) {
     return {
@@ -32,7 +68,7 @@ export default async function ProductDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = PRODUCTS_DATA.find((p) => p.id === id);
+  const product = await getProduct(id);
 
   if (!product) {
     notFound();

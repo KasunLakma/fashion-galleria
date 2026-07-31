@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { PRODUCTS_DATA, Product } from "@/data/mockData";
 import { Star, ArrowRight } from "lucide-react";
@@ -10,13 +11,26 @@ interface RelatedProductsProps {
 }
 
 export default function RelatedProducts({ currentProductId, category }: RelatedProductsProps) {
+  const [productsList, setProductsList] = useState<Product[]>(PRODUCTS_DATA);
+
+  useEffect(() => {
+    fetch("/api/products", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+          setProductsList(data.products);
+        }
+      })
+      .catch((err) => console.warn("RelatedProducts fetch products error:", err));
+  }, []);
+
   // Find related products by category or bestsellers excluding current product
-  let related = PRODUCTS_DATA.filter(
-    (p) => p.id !== currentProductId && p.category === category
+  let related = productsList.filter(
+    (p) => p.id !== currentProductId && p.category.toLowerCase().includes(category.toLowerCase())
   );
 
   if (related.length < 4) {
-    const additional = PRODUCTS_DATA.filter(
+    const additional = productsList.filter(
       (p) => p.id !== currentProductId && !related.some((r) => r.id === p.id)
     );
     related = [...related, ...additional].slice(0, 4);

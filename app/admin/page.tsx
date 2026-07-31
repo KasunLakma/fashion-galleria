@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAdminAuth } from "@/context/AdminAuthContext";
-import { PRODUCTS_DATA } from "@/data/mockData";
+import { PRODUCTS_DATA, Product } from "@/data/mockData";
 import {
   TrendingUp,
   ShoppingBag,
@@ -17,6 +18,21 @@ import {
 export default function AdminDashboardPage() {
   const { adminUser, role } = useAdminAuth();
   const isOwner = role === "Owner";
+  const [productsList, setProductsList] = useState<Product[]>(PRODUCTS_DATA);
+
+  useEffect(() => {
+    fetch("/api/admin/products", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+          setProductsList((prev) => {
+            const existingIds = new Set(data.products.map((p: any) => p.id));
+            return [...data.products, ...prev.filter((p) => !existingIds.has(p.id))];
+          });
+        }
+      })
+      .catch((err) => console.warn("Admin page fetch products error:", err));
+  }, []);
 
   // Mock revenue metrics calculation
   const mockOrders = [
@@ -234,7 +250,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="space-y-3">
-            {PRODUCTS_DATA.slice(0, 4).map((p, idx) => {
+            {productsList.slice(0, 4).map((p, idx) => {
               const mockStock = [8, 3, 14, 2][idx]; // Low stock simulation
               const isLowStock = mockStock < 5;
 

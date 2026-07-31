@@ -1,22 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PRODUCTS_DATA, Product } from "@/data/mockData";
 import { useCart } from "@/context/CartContext";
 import { Heart, ShoppingBag, Check, Star } from "lucide-react";
 
 export default function ProductGrid() {
+  const [productsList, setProductsList] = useState<Product[]>(PRODUCTS_DATA);
   const [activeTab, setActiveTab] = useState<string>("ALL");
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const [selectedSizeMap, setSelectedSizeMap] = useState<Record<string, string>>({});
   const { addToCart } = useCart();
 
+  useEffect(() => {
+    fetch("/api/products", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+          setProductsList(data.products);
+        }
+      })
+      .catch((err) => console.warn("Home ProductGrid fetch products error:", err));
+  }, []);
+
   const filterProducts = () => {
-    if (activeTab === "NEW") return PRODUCTS_DATA.filter((p) => p.isNewArrival);
-    if (activeTab === "BESTSELLERS") return PRODUCTS_DATA.filter((p) => p.isBestseller);
-    if (activeTab === "WORKWEAR") return PRODUCTS_DATA.filter((p) => p.category === "Tops & Shirts" || p.category === "Trousers & Pants");
-    return PRODUCTS_DATA;
+    if (activeTab === "NEW") return productsList.filter((p) => p.isNewArrival);
+    if (activeTab === "BESTSELLERS") return productsList.filter((p) => p.isBestseller);
+    if (activeTab === "WORKWEAR") return productsList.filter((p) => p.category === "Tops & Shirts" || p.category === "Trousers & Pants" || p.category === "Dresses");
+    return productsList;
   };
 
   const filteredProducts = filterProducts();

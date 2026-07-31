@@ -14,6 +14,7 @@ function ShopContent() {
   const categoryParam = searchParams.get("category");
   const filterParam = searchParams.get("filter");
 
+  const [productsList, setProductsList] = useState<Product[]>(PRODUCTS_DATA);
   const [filters, setFilters] = useState<FilterState>({
     categories: categoryParam ? [categoryParam] : [],
     sizes: [],
@@ -23,6 +24,18 @@ function ShopContent() {
 
   const [sortBy, setSortBy] = useState<SortOption>("featured");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // Fetch products dynamically from database API endpoint
+  useEffect(() => {
+    fetch("/api/products", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+          setProductsList(data.products);
+        }
+      })
+      .catch((err) => console.warn("Shop page fetch products error:", err));
+  }, []);
 
   // Sync filters when searchParams URL changes
   useEffect(() => {
@@ -44,7 +57,7 @@ function ShopContent() {
 
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
-    let result = [...PRODUCTS_DATA];
+    let result = [...productsList];
 
     // Filter by Special URL Param (e.g. ?filter=new-arrivals or ?filter=sale)
     if (filterParam === "new-arrivals") {
@@ -145,7 +158,7 @@ function ShopContent() {
 
             <span className="text-xs text-stone-500 font-medium">
               Showing <strong className="text-stone-900 font-bold">{filteredProducts.length}</strong> of{" "}
-              {PRODUCTS_DATA.length} items
+              {productsList.length} items
             </span>
           </div>
 
