@@ -18,7 +18,9 @@ import {
   RefreshCw,
   ShoppingBag,
   ExternalLink,
+  AlertCircle,
 } from "lucide-react";
+import OrderTrackerView from "@/components/shop/OrderTrackerView";
 
 interface UserProfile {
   name: string;
@@ -41,27 +43,77 @@ export default function ProfilePage() {
     district: "Colombo",
   });
 
-  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [customerOrders, setCustomerOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
-  // Load profile from localStorage if previous checkout details were saved
+  // Load profile from localStorage and auto-fetch orders if email exists
   useEffect(() => {
     try {
       const savedUser = localStorage.getItem("fg_user_profile");
+      const savedEmail = localStorage.getItem("fg_customer_email");
+      let activeEm = savedEmail || "";
+
       if (savedUser) {
-        setProfile(JSON.parse(savedUser));
+        const parsed = JSON.parse(savedUser);
+        setProfile(parsed);
+        if (!activeEm && parsed.email) {
+          activeEm = parsed.email;
+        }
+      }
+
+      if (activeEm) {
+        fetchOrdersForEmail(activeEm);
       }
     } catch {
       // ignore
     }
   }, []);
 
+  const fetchOrdersForEmail = async (email: string) => {
+    if (!email.trim() || !email.includes("@")) return;
+    setLoadingOrders(true);
+    try {
+      const res = await fetch(`/api/orders/${encodeURIComponent(email.trim())}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.orders)) {
+        setCustomerOrders(data.orders);
+      }
+    } catch (err) {
+      console.error("Failed to load customer orders:", err);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
   const handleSearchOrder = (e: React.FormEvent) => {
     e.preventDefault();
     if (!orderQuery.trim()) return;
-    const cleanId = orderQuery.trim().toUpperCase();
-    window.location.href = `/orders/${cleanId}`;
+    const cleanQuery = orderQuery.trim();
+    if (cleanQuery.includes("@")) {
+      fetchOrdersForEmail(cleanQuery);
+    } else {
+      setSelectedOrderId(cleanQuery);
+    }
   };
+
+  if (selectedOrderId) {
+    return (
+      <div>
+        <div className="bg-stone-900 text-white py-3 px-4 text-center text-xs border-b border-stone-800 flex items-center justify-center space-x-3">
+          <button
+            onClick={() => setSelectedOrderId(null)}
+            className="text-amber-400 hover:text-white font-bold uppercase"
+          >
+            ← Back to Account Dashboard
+          </button>
+          <span>•</span>
+          <span>Order Reference: <strong className="font-mono text-white font-bold">{selectedOrderId}</strong></span>
+        </div>
+        <OrderTrackerView orderId={selectedOrderId} />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-stone-50 min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
@@ -89,7 +141,7 @@ export default function ProfilePage() {
                 {profile.name || "Welcome Back"}
               </h1>
               <p className="text-xs text-stone-400 mt-1 flex items-center space-x-2">
-                <span>{profile.phone || "Doorstep Express COD Delivery Account"}</span>
+                <span>{profile.email || profile.phone || "Express COD Account"}</span>
                 {profile.city && (
                   <>
                     <span>•</span>
@@ -111,14 +163,14 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Quick Order Lookup Banner */}
+        {/* Quick Order / Email Lookup Banner */}
         <div className="bg-white p-5 border border-stone-200 shadow-xs rounded-xs">
           <form onSubmit={handleSearchOrder} className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative flex-1 w-full">
               <Search size={18} className="absolute left-3.5 top-3 text-stone-400" />
               <input
                 type="text"
-                placeholder="Enter Order Reference (e.g. FG-849201 or Order ID)..."
+                placeholder="Enter Order Reference (e.g. FG-849201) OR Email Address..."
                 value={orderQuery}
                 onChange={(e) => setOrderQuery(e.target.value)}
                 className="w-full text-xs font-semibold uppercase tracking-wider pl-10 pr-4 py-3 border border-stone-300 rounded-xs focus:outline-none focus:border-amber-800 bg-stone-50"
@@ -147,7 +199,7 @@ export default function ProfilePage() {
               }`}
             >
               <Package size={16} />
-              <span>My Orders & Delivery History</span>
+              <span>My Orders & Delivery History {customerOrders.length > 0 ? `(${customerOrders.length})` : ""}</span>
             </button>
             <button
               onClick={() => setActiveTab("details")}
@@ -168,35 +220,117 @@ export default function ProfilePage() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-stone-100 pb-3">
                   <h3 className="font-serif text-sm font-bold uppercase tracking-wider text-stone-900">
-                    Recent Orders Overview
+                    Active & Recent Orders
                   </h3>
                   <Link href="/track-order" className="text-xs text-amber-800 hover:underline font-bold uppercase">
-                    Track Specific Order →
+                    Lookup Any Order →
                   </Link>
                 </div>
 
-                <div className="bg-stone-50 border border-stone-200 p-6 text-center space-y-4 rounded-xs">
-                  <div className="w-12 h-12 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto">
-                    <Package size={24} />
+                {loadingOrders ? (
+                  <div className="py-12 text-center text-xs text-stone-500 font-bold uppercase tracking-widest flex items-center justify-center space-x-2">
+                    <RefreshCw size={18} className="animate-spin text-amber-800" />
+                    <span>Fetching Your Orders...</span>
                   </div>
-                  <div>
-                    <h4 className="font-serif text-base font-bold uppercase text-stone-900">
-                      Real-Time Order Tracking Active
-                    </h4>
-                    <p className="text-xs text-stone-600 max-w-md mx-auto mt-1">
-                      Enter your Order Reference Number (e.g. <strong className="font-mono text-stone-900 font-bold">FG-123456</strong>) above or click Live Order Tracker to view fulfillment logs and courier updates.
-                    </p>
+                ) : customerOrders.length > 0 ? (
+                  <div className="space-y-4">
+                    {customerOrders.map((order) => {
+                      const isDelivered = order.status === "Delivered" || order.status === "Completed";
+                      const isCancelled = order.status.toLowerCase() === "cancelled";
+
+                      return (
+                        <div
+                          key={order.id}
+                          className="border border-stone-200 rounded-xs p-5 hover:border-amber-800 transition-all bg-stone-50 hover:bg-white shadow-xs space-y-4"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200 pb-3">
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <strong className="font-serif text-lg font-bold text-stone-900">
+                                  #{order.orderNumber}
+                                </strong>
+                                <span
+                                  className={`text-[9px] uppercase font-extrabold px-2 py-0.5 rounded border ${
+                                    isCancelled
+                                      ? "bg-red-100 text-red-900 border-red-300"
+                                      : isDelivered
+                                      ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                                      : "bg-amber-100 text-amber-900 border-amber-300"
+                                  }`}
+                                >
+                                  {order.status}
+                                </span>
+                              </div>
+                              <span className="text-xs text-stone-500 block mt-0.5">
+                                Placed on {new Date(order.createdAt).toLocaleString("en-LK", { dateStyle: "medium" })}
+                              </span>
+                            </div>
+
+                            <div className="text-left sm:text-right">
+                              <span className="text-[10px] text-stone-500 uppercase tracking-widest block font-bold">
+                                Grand Total ({order.paymentMethod || "COD"})
+                              </span>
+                              <span className="font-serif text-lg font-extrabold text-amber-800">
+                                LKR {order.grandTotal.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Purchased Items Thumbnail Row */}
+                          <div className="flex flex-wrap items-center gap-3">
+                            {order.items?.map((item: any) => (
+                              <div key={item.id} className="flex items-center space-x-2 bg-white border border-stone-200 p-1.5 rounded-xs text-xs">
+                                {item.image ? (
+                                  /* eslint-disable-next-line @next/next/no-img-element */
+                                  <img src={item.image} alt={item.title} className="w-8 h-10 object-cover rounded-xs border" />
+                                ) : (
+                                  <Package size={16} className="text-stone-400" />
+                                )}
+                                <div className="text-[11px]">
+                                  <p className="font-bold text-stone-900 max-w-[140px] truncate">{item.title}</p>
+                                  <p className="text-stone-500">Qty: {item.quantity} | Size: {item.size}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="pt-2 flex justify-end">
+                            <button
+                              onClick={() => setSelectedOrderId(order.orderNumber)}
+                              className="inline-flex items-center space-x-2 bg-stone-900 hover:bg-amber-800 text-white text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xs transition-colors"
+                            >
+                              <span>VIEW LIVE TRACKING & DETAILS</span>
+                              <ArrowRight size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="pt-2">
-                    <Link
-                      href="/track-order"
-                      className="inline-flex items-center space-x-2 bg-stone-900 text-white text-xs uppercase tracking-widest px-6 py-3 font-bold hover:bg-amber-800 transition-colors"
-                    >
-                      <Truck size={14} />
-                      <span>Open Real-Time Tracker</span>
-                    </Link>
+                ) : (
+                  <div className="bg-stone-50 border border-stone-200 p-8 text-center space-y-4 rounded-xs">
+                    <div className="w-12 h-12 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto">
+                      <Package size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-serif text-base font-bold uppercase text-stone-900">
+                        Order Lookup & Live Tracking
+                      </h4>
+                      <p className="text-xs text-stone-600 max-w-md mx-auto mt-1">
+                        Enter your Order Reference Number (e.g. <strong className="font-mono text-stone-900 font-bold">FG-123456</strong>) or Registered Email Address to view real-time fulfillment logs.
+                      </p>
+                    </div>
+                    <div className="pt-2">
+                      <Link
+                        href="/track-order"
+                        className="inline-flex items-center space-x-2 bg-stone-900 text-white text-xs uppercase tracking-widest px-6 py-3 font-bold hover:bg-amber-800 transition-colors"
+                      >
+                        <Truck size={14} />
+                        <span>Open Order Tracking Page</span>
+                      </Link>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ) : (
               <div className="space-y-6">

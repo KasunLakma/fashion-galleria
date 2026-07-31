@@ -6,18 +6,54 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const rawId = await params;
+    const searchKey = decodeURIComponent(rawId.id || "").trim();
 
-    if (!id) {
+    if (!searchKey) {
       return NextResponse.json(
-        { success: false, error: "Order ID is required." },
+        { success: false, error: "Order reference or email address is required." },
         { status: 400 }
       );
     }
 
+    // Case 1: Search by Registered Email Address
+    if (searchKey.includes("@")) {
+      const emailLower = searchKey.toLowerCase();
+      const orders = await prisma.order.findMany({
+        where: {
+          OR: [
+            { email: { equals: emailLower, mode: "insensitive" } },
+            { user: { email: { equals: emailLower, mode: "insensitive" } } },
+          ],
+        },
+        include: {
+          items: true,
+          statusHistory: {
+            orderBy: { createdAt: "asc" },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (orders.length === 0) {
+        return NextResponse.json(
+          { success: false, error: `No active orders found for email "${searchKey}".` },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        type: "email",
+        email: emailLower,
+        orders,
+      });
+    }
+
+    // Case 2: Search by Specific Order Number or Database ID
     const order = await prisma.order.findFirst({
       where: {
-        OR: [{ orderNumber: id }, { id: id }],
+        OR: [{ orderNumber: searchKey }, { id: searchKey }],
       },
       include: {
         items: true,
@@ -29,13 +65,14 @@ export async function GET(
 
     if (!order) {
       return NextResponse.json(
-        { success: false, error: "Order not found." },
+        { success: false, error: `Order reference "${searchKey}" not found.` },
         { status: 404 }
       );
     }
 
     return NextResponse.json({
       success: true,
+      type: "order",
       order,
     });
   } catch (error: unknown) {
