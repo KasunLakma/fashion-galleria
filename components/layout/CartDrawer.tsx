@@ -127,8 +127,8 @@ export default function CartDrawer() {
                 <div className="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mb-4 text-stone-400">
                   <ShoppingBag size={36} />
                 </div>
-                <h3 className="text-lg font-serif font-bold text-stone-900 mb-1 uppercase tracking-wider">
-                  Your bag is empty
+                <h3 className="text-lg font-serif font-bold text-stone-900 mb-1 tracking-wider">
+                  Your shopping bag is empty.
                 </h3>
                 <p className="text-xs text-stone-500 max-w-xs mb-6">
                   Discover our latest luxury Sri Lankan apparel collection and elevate your wardrobe.
@@ -268,7 +268,7 @@ export default function CartDrawer() {
                 <div className="flex justify-between">
                   <span>Estimated Delivery</span>
                   <span className="text-amber-800 font-medium">
-                    {subtotal >= 15000 ? "FREE Express COD" : "LKR 400 Flat Rate"}
+                    {subtotal === 0 ? "LKR 0" : subtotal >= 15000 ? "FREE Express COD" : "LKR 400 Flat Rate"}
                   </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-stone-200 text-sm font-extrabold text-stone-900">

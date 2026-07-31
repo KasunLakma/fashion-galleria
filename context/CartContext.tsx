@@ -66,6 +66,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
               item.id &&
               item.title &&
               item.title !== "Victoria Emerald Linen Wrap Dress" &&
+              item.title !== "Aurelia Gold-Button Tailored Blazer" &&
               typeof item.price === "number"
           );
           setCartItems(filtered);
