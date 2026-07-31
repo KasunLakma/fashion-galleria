@@ -2,8 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { PRODUCTS_DATA, Product } from "@/data/mockData";
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   Package,
   Plus,
@@ -29,6 +27,9 @@ export default function AdminProductsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  // Success Feedback Toast
+  const [successToast, setSuccessToast] = useState<string | null>(null);
+
   // File Upload & Drag-and-Drop state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -51,20 +52,23 @@ export default function AdminProductsPage() {
     description: "Luxury Italian-grade linen wrap dress tailored for Sri Lankan tropical elegance.",
   });
 
-  // Fetch initial products from PostgreSQL endpoint if available
+  const fetchProductsList = async () => {
+    try {
+      const res = await fetch("/api/admin/products");
+      const data = await res.json();
+      if (data.success && Array.isArray(data.products) && data.products.length > 0) {
+        setProductsList((prev) => {
+          const existingIds = new Set(data.products.map((p: any) => p.id));
+          return [...data.products, ...prev.filter((p) => !existingIds.has(p.id))];
+        });
+      }
+    } catch (err) {
+      console.warn("Prisma fetch products warning:", err);
+    }
+  };
+
   useEffect(() => {
-    fetch("/api/admin/products")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.products) && data.products.length > 0) {
-          setProductsList((prev) => {
-            const existingIds = new Set(data.products.map((p: any) => p.id));
-            const merged = [...data.products, ...prev.filter((p) => !existingIds.has(p.id))];
-            return merged;
-          });
-        }
-      })
-      .catch((err) => console.warn("Prisma fetch products warning:", err));
+    fetchProductsList();
   }, []);
 
   const handleOpenAddModal = () => {
@@ -105,15 +109,26 @@ export default function AdminProductsPage() {
     });
   };
 
-  // Handle File Selection via Browse or Dropzone
+  // Handle File Selection via Browse or Dropzone: convert directly to Base64 via FileReader.readAsDataURL
   const handleFileChange = (file: File) => {
     if (!file.type.startsWith("image/")) {
       alert("Please select a valid image file (e.g. PNG, JPG, WEBP).");
       return;
     }
     setSelectedFile(file);
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64String = e.target?.result as string;
+      if (base64String) {
+        setPreviewUrl(base64String);
+        setFormValues((prev) => ({
+          ...prev,
+          primaryImage: base64String,
+        }));
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -137,60 +152,23 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Storage Upload Logic (Firebase Storage with Data URL fallback)
-  const uploadImageFile = async (file: File): Promise<string> => {
-    setUploadStatus("Uploading image to Cloud Storage...");
-
-    // Try Firebase Storage upload first if storage is initialized
-    if (storage) {
-      try {
-        const storagePath = `products/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-        const storageRef = ref(storage, storagePath);
-        await uploadBytes(storageRef, file);
-        const downloadUrl = await getDownloadURL(storageRef);
-        return downloadUrl;
-      } catch (err) {
-        console.warn("Firebase storage upload error, falling back to data URL:", err);
-      }
-    }
-
-    // Fallback: Read file as Data URL (base64) so it is 100% reliable and displayable
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsUploading(true);
 
-    let finalImageUrl = formValues.primaryImage;
-
-    // Perform file upload if a new image file was selected
-    if (selectedFile) {
-      try {
-        finalImageUrl = await uploadImageFile(selectedFile);
-      } catch (uploadErr) {
-        console.error("Upload error:", uploadErr);
-        alert("Image upload failed. Please try again.");
-        setIsUploading(false);
-        return;
-      }
-    }
+    const finalImageUrl = formValues.primaryImage || previewUrl;
 
     if (!finalImageUrl) {
-      alert("Please upload a primary image file before saving.");
-      setIsUploading(false);
+      alert("Please select or upload a primary image file before saving.");
       return;
     }
+
+    setIsUploading(true);
 
     const sizesArray = formValues.sizes.split(",").map((s) => s.trim());
     const finalHoverUrl = formValues.hoverImage || finalImageUrl;
 
     const payload = {
+      id: editingProduct ? editingProduct.id : undefined,
       name: formValues.name,
       category: formValues.category,
       originalPrice: Number(formValues.originalPrice),
@@ -203,7 +181,6 @@ export default function AdminProductsPage() {
     };
 
     try {
-      // Save to PostgreSQL database via API
       const response = await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -221,55 +198,43 @@ export default function AdminProductsPage() {
         }
       } else {
         // Fallback local update
+        const localProd: Product = {
+          id: editingProduct ? editingProduct.id : `prod-${Date.now()}`,
+          name: payload.name,
+          category: payload.category,
+          originalPrice: payload.originalPrice,
+          discountedPrice: payload.discountedPrice,
+          rating: editingProduct ? editingProduct.rating : 5.0,
+          reviewCount: editingProduct ? editingProduct.reviewCount : 1,
+          primaryImage: payload.primaryImage,
+          hoverImage: payload.hoverImage,
+          tag: payload.tag,
+          sizes: payload.sizes,
+          inStock: true,
+          isNewArrival: true,
+          description: payload.description,
+        };
         if (editingProduct) {
-          setProductsList((prev) =>
-            prev.map((p) =>
-              p.id === editingProduct.id
-                ? {
-                    ...p,
-                    name: payload.name,
-                    category: payload.category,
-                    originalPrice: payload.originalPrice,
-                    discountedPrice: payload.discountedPrice,
-                    primaryImage: payload.primaryImage,
-                    hoverImage: payload.hoverImage,
-                    tag: payload.tag,
-                    sizes: payload.sizes,
-                    description: payload.description,
-                  }
-                : p
-            )
-          );
+          setProductsList((prev) => prev.map((p) => (p.id === editingProduct.id ? localProd : p)));
         } else {
-          const newProd: Product = {
-            id: `prod-${Date.now()}`,
-            name: payload.name,
-            category: payload.category,
-            originalPrice: payload.originalPrice,
-            discountedPrice: payload.discountedPrice,
-            rating: 5.0,
-            reviewCount: 1,
-            primaryImage: payload.primaryImage,
-            hoverImage: payload.hoverImage,
-            tag: payload.tag,
-            sizes: payload.sizes,
-            inStock: true,
-            isNewArrival: true,
-            description: payload.description,
-          };
-          setProductsList((prev) => [newProd, ...prev]);
+          setProductsList((prev) => [localProd, ...prev]);
         }
       }
+
+      setSuccessToast(editingProduct ? "Product SKU updated successfully!" : "Product SKU saved successfully!");
+      setTimeout(() => setSuccessToast(null), 4000);
+
+      await fetchProductsList();
     } catch (apiErr) {
       console.warn("DB save warning, applying local state update:", apiErr);
-      const newProd: Product = {
-        id: `prod-${Date.now()}`,
+      const localProd: Product = {
+        id: editingProduct ? editingProduct.id : `prod-${Date.now()}`,
         name: payload.name,
         category: payload.category,
         originalPrice: payload.originalPrice,
         discountedPrice: payload.discountedPrice,
-        rating: 5.0,
-        reviewCount: 1,
+        rating: editingProduct ? editingProduct.rating : 5.0,
+        reviewCount: editingProduct ? editingProduct.reviewCount : 1,
         primaryImage: payload.primaryImage,
         hoverImage: payload.hoverImage,
         tag: payload.tag,
@@ -278,7 +243,13 @@ export default function AdminProductsPage() {
         isNewArrival: true,
         description: payload.description,
       };
-      setProductsList((prev) => [newProd, ...prev]);
+      if (editingProduct) {
+        setProductsList((prev) => prev.map((p) => (p.id === editingProduct.id ? localProd : p)));
+      } else {
+        setProductsList((prev) => [localProd, ...prev]);
+      }
+      setSuccessToast("Product saved locally!");
+      setTimeout(() => setSuccessToast(null), 4000);
     } finally {
       setIsUploading(false);
       setIsAddModalOpen(false);
@@ -286,9 +257,16 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async (id: string) => {
     if (confirm("Are you sure you want to delete this product SKU?")) {
+      try {
+        await fetch(`/api/admin/products?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      } catch (err) {
+        console.warn("Error deleting product via API:", err);
+      }
       setProductsList((prev) => prev.filter((p) => p.id !== id));
+      setSuccessToast("Product SKU deleted successfully!");
+      setTimeout(() => setSuccessToast(null), 4000);
     }
   };
 
@@ -302,6 +280,19 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Instant Success Feedback Toast Banner */}
+      {successToast && (
+        <div className="bg-emerald-900 text-white px-4 py-3 rounded-xs shadow-lg flex items-center justify-between animate-fade-in border-l-4 border-emerald-400">
+          <div className="flex items-center space-x-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            <span className="text-xs font-bold uppercase tracking-wider">{successToast}</span>
+          </div>
+          <button onClick={() => setSuccessToast(null)} className="text-white hover:text-stone-300">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-stone-200 pb-4 gap-4">
         <div>
@@ -639,7 +630,7 @@ export default function AdminProductsPage() {
                           Click to browse gallery or drag and drop image file
                         </h4>
                         <p className="text-[10px] text-stone-500">
-                          Supports PNG, JPG, JPEG, or WEBP (Image will be uploaded to cloud storage)
+                          Supports PNG, JPG, JPEG, or WEBP (Image will be converted to Base64 data URL instantly)
                         </p>
                       </div>
                     )}
@@ -686,7 +677,7 @@ export default function AdminProductsPage() {
                     {isUploading ? (
                       <>
                         <RefreshCw size={14} className="animate-spin text-amber-400" />
-                        <span>UPLOADING & SAVING...</span>
+                        <span>SAVING SKU...</span>
                       </>
                     ) : (
                       <>
