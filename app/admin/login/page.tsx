@@ -12,7 +12,7 @@ export default function AdminLoginPage() {
 
   const [selectedRole, setSelectedRole] = useState<AdminRole>("Super Admin");
   const [email, setEmail] = useState("superadmin@fashiongalleria.lk");
-  const [password, setPassword] = useState("••••••••");
+  const [password, setPassword] = useState("superadmin123");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,10 +20,13 @@ export default function AdminLoginPage() {
     setSelectedRole(role);
     if (role === "Super Admin") {
       setEmail("superadmin@fashiongalleria.lk");
+      setPassword("superadmin123");
     } else if (role === "Owner") {
       setEmail("owner@fashiongalleria.lk");
+      setPassword("owner123");
     } else {
       setEmail("staff@fashiongalleria.lk");
+      setPassword("staff123");
     }
   };
 
@@ -136,6 +139,7 @@ export default function AdminLoginPage() {
               </label>
               <div className="relative">
                 <input
+                  id="admin-password-input"
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
@@ -144,7 +148,7 @@ export default function AdminLoginPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-amber-400 transition-colors p-1 focus:outline-none"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
