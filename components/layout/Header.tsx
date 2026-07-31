@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Search, Heart, ShoppingBag, Home, ChevronDown } from "lucide-react";
+import { Menu, Search, Heart, ShoppingBag, Home, ChevronDown, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import MobileNavDrawer from "./MobileNavDrawer";
 import CartDrawer from "./CartDrawer";
@@ -237,6 +237,15 @@ export default function Header() {
                   <Search size={20} strokeWidth={1.5} />
                 </button>
 
+                <Link
+                  href="/profile"
+                  className="p-1.5 hover:text-amber-800 transition-colors"
+                  aria-label="Customer Account & Orders"
+                  title="Customer Account & Orders"
+                >
+                  <User size={20} strokeWidth={1.5} />
+                </Link>
+
                 <button
                   onClick={() => {
                     alert("Wishlist feature: Save your favorite Ceylon Atelier items (Coming Soon!)");
@@ -279,6 +288,14 @@ export default function Header() {
               >
                 <Search size={20} strokeWidth={1.5} />
               </button>
+              <Link
+                href="/profile"
+                className="p-1 text-stone-800 hover:text-black transition-colors"
+                aria-label="Customer Account"
+                title="Customer Account"
+              >
+                <User size={20} strokeWidth={1.5} />
+              </Link>
               <button
                 onClick={openCart}
                 className="p-1 text-stone-800 hover:text-black transition-colors relative"

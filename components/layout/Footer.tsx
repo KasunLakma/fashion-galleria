@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Mail, ArrowRight, MapPin, Phone, ShieldCheck, Check } from "lucide-react";
+import Link from "next/link";
+import { Mail, ArrowRight, MapPin, Phone, ShieldCheck, Check, PackageCheck, User } from "lucide-react";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -76,6 +77,18 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2.5 text-stone-400">
               <li>
+                <Link href="/track-order" className="hover:text-amber-400 text-amber-400 font-semibold transition-colors flex items-center space-x-1.5">
+                  <PackageCheck size={14} />
+                  <span>Track Order & Delivery Status</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/profile" className="hover:text-white transition-colors flex items-center space-x-1.5">
+                  <User size={14} />
+                  <span>My Account & Order History</span>
+                </Link>
+              </li>
+              <li>
                 <a href="#" className="hover:text-white transition-colors">
                   Islandwide Cash on Delivery Info
                 </a>
@@ -87,17 +100,17 @@ export default function Footer() {
               </li>
               <li>
                 <a href="#" className="hover:text-white transition-colors">
+                  Frequently Asked Questions (FAQs)
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white transition-colors">
                   Sri Lanka Express Delivery Options
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-white transition-colors">
                   Size Guide & Measurements
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Frequently Asked Questions (FAQs)
                 </a>
               </li>
             </ul>

@@ -149,8 +149,23 @@ export default function CheckoutPage() {
       const resData = await response.json();
 
       if (resData.success && resData.orderId) {
+        try {
+          localStorage.setItem(
+            "fg_user_profile",
+            JSON.stringify({
+              name: formData.fullName,
+              email: formData.email,
+              phone: formData.primaryPhone,
+              address: formData.address,
+              city: formData.city,
+              district: formData.district,
+            })
+          );
+        } catch {
+          // ignore
+        }
         clearCart();
-        router.push(`/order-success/${resData.orderId}`);
+        router.push(`/orders/${resData.orderId}`);
       } else {
         alert(resData.error || "Order creation failed. Please try again.");
         setIsSubmitting(false);
@@ -160,7 +175,7 @@ export default function CheckoutPage() {
       // Fallback redirect
       const generatedId = `FG-${Math.floor(100000 + Math.random() * 900000)}`;
       clearCart();
-      router.push(`/order-success/${generatedId}`);
+      router.push(`/orders/${generatedId}`);
     }
   };
 
