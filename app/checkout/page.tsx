@@ -521,7 +521,10 @@ export default function CheckoutPage() {
                           </span>
                         </div>
                         <span className="text-[11px] text-stone-600 block mt-0.5">
-                          Pay cash directly to the courier agent when receiving your package in Sri Lanka.
+                          Pay cash directly to the courier agent when receiving your package in Sri Lanka.{" "}
+                          <Link href="/cod-info" target="_blank" className="text-amber-800 font-bold underline hover:text-amber-900">
+                            COD Policy & Details
+                          </Link>
                         </span>
                       </div>
                     </div>
@@ -704,13 +707,20 @@ export default function CheckoutPage() {
               </div>
 
               {/* Guarantee Box */}
-              <div className="bg-stone-50 border border-stone-200 p-3 rounded-xs text-[11px] text-stone-600 space-y-1.5">
+              <div className="bg-stone-50 border border-stone-200 p-4 rounded-xs text-[11px] text-stone-600 space-y-2">
                 <div className="flex items-center space-x-1.5 font-bold text-stone-900 uppercase">
                   <ShieldCheck size={14} className="text-emerald-700" />
                   <span>100% Risk-Free Guarantee</span>
                 </div>
-                <p>
-                  Inspect your luxury garments upon delivery. We offer a 7-day door-to-door courier exchange if you need a size adjustment.
+                <p className="leading-relaxed">
+                  Inspect your luxury garments upon delivery. We offer a{" "}
+                  <Link href="/returns" target="_blank" className="text-amber-800 font-bold underline hover:text-amber-900">
+                    7-day door-to-door courier exchange
+                  </Link>{" "}
+                  if you need a size adjustment. Have questions? Read our{" "}
+                  <Link href="/faq" target="_blank" className="text-amber-800 font-bold underline hover:text-amber-900">
+                    FAQs
+                  </Link>.
                 </p>
               </div>
             </div>

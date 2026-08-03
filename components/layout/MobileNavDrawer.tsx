@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { X, ChevronDown, ChevronRight, Search, MapPin, Phone } from "lucide-react";
+import { X, ChevronDown, ChevronRight, Search, MapPin, Phone, ShieldCheck, RotateCcw, HelpCircle, Banknote } from "lucide-react";
 
 interface MobileNavDrawerProps {
   isOpen: boolean;
@@ -136,16 +136,43 @@ export default function MobileNavDrawer({ isOpen, onClose, onOpenSearch }: Mobil
               );
             })}
 
-            {/* General links */}
-            <div className="p-4 space-y-3 bg-white">
-              <a href="#" className="flex items-center space-x-2 text-xs font-semibold text-stone-800 uppercase tracking-wider">
-                <MapPin size={16} className="text-amber-700" />
-                <span>STORE LOCATOR (COLOMBO & KANDY)</span>
-              </a>
-              <a href="#" className="flex items-center space-x-2 text-xs font-semibold text-stone-800 uppercase tracking-wider">
-                <Phone size={16} className="text-amber-700" />
-                <span>CUSTOMER CARE: 011 700 8000</span>
-              </a>
+            {/* Quick Links Section */}
+            <div className="p-4 space-y-2.5 bg-stone-50 border-t border-stone-200">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-stone-500 block mb-1">
+                OUR BRAND & POLICIES
+              </span>
+              <Link
+                href="/about"
+                onClick={onClose}
+                className="flex items-center space-x-2 text-xs font-semibold text-stone-800 hover:text-amber-800 uppercase tracking-wider py-1 transition-colors"
+              >
+                <ShieldCheck size={16} className="text-amber-700" />
+                <span>About Fashion Galleria</span>
+              </Link>
+              <Link
+                href="/returns"
+                onClick={onClose}
+                className="flex items-center space-x-2 text-xs font-semibold text-stone-800 hover:text-amber-800 uppercase tracking-wider py-1 transition-colors"
+              >
+                <RotateCcw size={16} className="text-amber-700" />
+                <span>7-Day Return Policy</span>
+              </Link>
+              <Link
+                href="/cod-info"
+                onClick={onClose}
+                className="flex items-center space-x-2 text-xs font-semibold text-stone-800 hover:text-amber-800 uppercase tracking-wider py-1 transition-colors"
+              >
+                <Banknote size={16} className="text-amber-700" />
+                <span>Cash on Delivery Info</span>
+              </Link>
+              <Link
+                href="/faq"
+                onClick={onClose}
+                className="flex items-center space-x-2 text-xs font-semibold text-stone-800 hover:text-amber-800 uppercase tracking-wider py-1 transition-colors"
+              >
+                <HelpCircle size={16} className="text-amber-700" />
+                <span>FAQs & Customer Care</span>
+              </Link>
             </div>
           </div>
 

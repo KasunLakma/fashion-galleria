@@ -19,34 +19,7 @@ export default function Header() {
   const wishlistCount = 0;
 
   if (isAdminPage) {
-    return (
-      <header className="sticky top-0 z-30 bg-stone-950 border-b border-stone-800 text-white transition-all duration-200 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Admin Brand Logo / Title */}
-            <Link href="/admin" className="flex items-center space-x-3 group">
-              <div>
-                <span className="font-serif text-xl sm:text-2xl font-bold tracking-[0.2em] text-white uppercase block leading-none">
-                  Fashion Galleria
-                </span>
-                <span className="text-[9px] tracking-[0.35em] text-amber-400 uppercase font-extrabold block mt-1">
-                  ADMIN CONTROL CENTER
-                </span>
-              </div>
-            </Link>
-
-            {/* Single Prominent HOME Button */}
-            <Link
-              href="/"
-              className="inline-flex items-center space-x-2 bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold tracking-widest uppercase px-4 py-2.5 sm:px-5 sm:py-2.5 rounded-xs transition-all shadow-xs border border-amber-600/50 hover:shadow-md active:scale-[0.98]"
-            >
-              <Home size={16} />
-              <span>HOME</span>
-            </Link>
-          </div>
-        </div>
-      </header>
-    );
+    return null;
   }
 
   return (

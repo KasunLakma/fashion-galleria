@@ -77,7 +77,13 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2.5 text-stone-400">
               <li>
-                <Link href="/track-order" className="hover:text-amber-400 text-amber-400 font-semibold transition-colors flex items-center space-x-1.5">
+                <Link href="/about" className="hover:text-amber-400 text-amber-400 font-semibold transition-colors flex items-center space-x-1.5">
+                  <ShieldCheck size={14} />
+                  <span>About Us & Brand Heritage</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/track-order" className="hover:text-white transition-colors flex items-center space-x-1.5">
                   <PackageCheck size={14} />
                   <span>Track Order & Delivery Status</span>
                 </Link>
@@ -89,29 +95,19 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link href="/cod-info" className="hover:text-white transition-colors">
                   Islandwide Cash on Delivery Info
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link href="/returns" className="hover:text-white transition-colors">
                   Returns & Exchanges Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link href="/faq" className="hover:text-white transition-colors">
                   Frequently Asked Questions (FAQs)
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Sri Lanka Express Delivery Options
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Size Guide & Measurements
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -123,29 +119,29 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2.5 text-stone-400">
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link href="/shop?category=Workwear" className="hover:text-white transition-colors">
                   Women&apos;s Workwear Luxe
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link href="/shop?category=Dresses" className="hover:text-white transition-colors">
                   Printed Maxi & Midi Dresses
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link href="/shop?category=Men" className="hover:text-white transition-colors">
                   Men&apos;s Smart Casual Linen
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link href="/shop" className="hover:text-white transition-colors">
                   Sri Lankan Designer Silk Scarf Series
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors text-amber-400 font-semibold">
+                <Link href="/shop?filter=sale" className="hover:text-white transition-colors text-amber-400 font-semibold">
                   Clearance Sale - Up to 50% Off
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
